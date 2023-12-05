@@ -3,11 +3,20 @@ var mongoose=require('mongoose');
 
 var Schema = mongoose.Schema;
 
+function paddingZeros(n, zero) {
+    n = n.toString();
+    while (n.length < zero) {
+        n = "0" + n;
+    }
+    return n;
+}
+
 var AnswerSchema= new Schema(
     {
         text:{type: String, required:true, minLength:1},
         ans_by:{type: String, required: true, minLength:1},
         ans_date_time:{type: Date, required: true, default: new Date()},
+        votes:{type: Number, required: true, default: 0},
     },
     {
         toObject: { getters: true },

@@ -10,8 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "*",
-    "express": "*",
-    "mongoose": "*",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.2",
     "mysql": "*"
   }
 }
