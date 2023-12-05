@@ -127,9 +127,6 @@ export default class FakeStackOverflow extends React.Component {
     this.setState({ searchRe: "",showQuestions: true, showForm: false, tagForm: false, isTagsActive: false, isQuestionsActive: true, isClickled: false, showAns: false});
   }
 
-  
- 
-
   render() {
     //displays the login page first
     if(this.state.loginPager){

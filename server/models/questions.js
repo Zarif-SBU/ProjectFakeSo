@@ -20,6 +20,7 @@ var QuestionSchema = new Schema(
         asked_by: { type: String, required: true, minLength: 1, default: "Anonymous" },
         ask_date_time: { type: Date, required: true, default: new Date() },
         views: { type: Number, default: 0},
+        votes: {type: Number, default: 0},
     },
     {
         toObject: { getters: true },
