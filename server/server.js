@@ -4,9 +4,15 @@
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const app = express();
 var cors = require('cors');
+const bcrypt = require('bcrypt');
 const port = 8000;
+
+const saltRounds = 10;
+
 
 app.use(cors());
 app.use(express.json());
@@ -14,6 +20,7 @@ app.use(express.json());
 let tags = require('./models/tags');
 let answers = require('./models/answers');
 let questions = require('./models/questions');
+let users= require('./models/users');
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
@@ -42,6 +49,17 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.on('connected', function() {
   console.log('Connected to database');
 });
+
+app.use(
+  session({
+    secret: "supersecret difficult to guess string",
+    cookie: {},
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: 'mongodb://127.0.0.1:27017/fake_so'})
+  })
+);
+
 
 const addMsgToRequest = function (req, res, next) {
   req.msg = 'Intercepted Request';
@@ -210,3 +228,55 @@ app.get('/questions/:questionId', async (req, res) => {
     res.status(500).json({ error: 'Server Error' });
   }
 });
+
+app.post("/login", async (req, res) => {
+  const uid= req.body.userName;
+  const epw= req.body.passwordHash;
+  const user = (await users.find({userName: uid}).exec())[0];
+  if(user===null || user ===undefined){
+    res.status(401).json({error: 'Invalid credentials'});
+  }
+
+  else{
+  const verdict = await bcrypt.compare(epw, user.passwordHash);
+  console.log("THE VERDICT IS: ", verdict);
+  try {
+    if(verdict) {
+      req.session.user = uid.trim();
+      res.status(200).send('Login successful!');
+    }
+    else {
+      res.status(401).json({error: 'Invalid credentials'});
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+}
+});
+
+app.post("/register", async (req, res) =>{
+  const salt= await bcrypt.genSalt(saltRounds);
+  const uName=req.body.userName;
+  const emailName= req.body.email;
+  const pwHash=await bcrypt.hash(req.body.passwordHash, salt);
+  const newUser = new users({
+    userName:uName,
+    email: emailName,
+    passwordHash: pwHash,
+  });
+
+  try {
+    await newUser.save();
+    res.status(201).send('Registration successful');
+  }
+  catch (err) {
+    res.status(500).send('Error registering User');
+  }
+});
+
+// app.post("/logout", async(req, res)=>{
+//   req.session.destroy(err =>{
+//     console.log("Session has been destroyed")
+//   });
+// });

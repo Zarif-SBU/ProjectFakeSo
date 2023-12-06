@@ -132,7 +132,9 @@ export default class FakeStackOverflow extends React.Component {
     if(this.state.loginPager){
       return(
         <div>
-            Once Welcome is done, switch this text out !!!!
+            <Welcome
+             loginFunc={this.handleGoToLogin}
+            />
         </div>
       );
     }
