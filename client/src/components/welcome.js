@@ -4,7 +4,7 @@ import axios from 'axios';
 export default class Welcome extends React.Component {
     constructor(props) {
         super(props);
-        this.state={login: false, register: false, userName: "", email:"", password:"", passwordVerification:"", userLogin:"", userPassword:""};
+        this.state={login: false, register: false, userName: "", email:"", password:"", passwordVerification:"", userLogin:"", userPassword:"", errorMessage: ""};
         this.handleChange = this.handleChange.bind(this);
         this.handleLogin = this.handleLogin.bind(this);
         this.handleRegister = this.handleRegister.bind(this);
@@ -13,44 +13,63 @@ export default class Welcome extends React.Component {
         this.handleGuest=this.handleGuest.bind(this);
     }
 
-    handleReturnRegister = async() => {
+    handleReturnRegister = async () => {
         let dataStuff = {
-           userName: this.state.userName,
-           email: this.state.email,
-           passwordHash: this.state.password
+          userName: this.state.userName,
+          email: this.state.email,
+          passwordHash: this.state.password,
         };
-        if(this.state.password !== this.state.passwordVerification) {
-            alert("password does not match");
+        if(!(this.state.email.toLowerCase().match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/))){
+            this.setState({ errorMessage: 'Email must be in example@example.example format' });
             return;
         }
-        try {
-            const response = await axios.post('http://localhost:8000/register', dataStuff);
-            console.log(response.data);
-            this.handleLogin();
-        } catch(error) {
-            console.error('Error registering: ', error.message);
+        if (this.state.password.toLowerCase().includes(this.state.userName.toLowerCase())) {
+            this.setState({ errorMessage: 'Password cannot include username' });
+          return;
         }
-
-        //Goes to Login once register is complete
-    }
+        if (this.state.password.toLowerCase().includes(this.state.email.toLowerCase().split('@')[0])) {
+            this.setState({ errorMessage: 'Password cannot include email' });
+          return;
+        }
+        if (this.state.password !== this.state.passwordVerification) {
+            this.setState({ errorMessage: 'Password does not match' });
+          return;
+        }
+        try {
+          const response = await axios.post('http://localhost:8000/register', dataStuff);
+          if (response.status === 201) {
+            this.handleLogin();
+          }
+        } catch (error) {
+          if (error.response && error.response.status === 409) {
+            this.setState({ errorMessage: 'User with this email already exists' });
+          } else {
+            this.setState({ errorMessage: 'Error registering user' });
+          }
+          console.error('Error registering: ', error.message);
+        }
+      }
 
     handleReturn = async() => {
         let dataStuff = {
-            userName: this.state.userLogin,
+            email: this.state.userLogin,
             passwordHash: this.state.userPassword
          }
          try {
-            const response = await axios.post('http://localhost:8000/login', dataStuff);
+            const response = await axios.post('http://localhost:8000/login', dataStuff, { withCredentials: true });
             console.log(response.data);
-            if(response.data.error==="Invalid credentials"){
-                throw "login err";
+            if(response.status === 200) {
+                this.props.loginFunc();
             }
-
-            //Goes to the home page once login is complete (MIGHT HAVE IT PASS IN SOME INFORMATION TO BE STORED IN A STATE TO BE UTILIZE)
-            this.props.loginFunc();
             
-        } catch(err) {
-            console.err('Error logging in: ', err.message);
+        } catch(error) {
+            if (error.response && error.response.status === 401) {
+                this.setState({ errorMessage: 'User with this email does not exist' });
+            }
+            if (error.response && error.response.status === 402) {
+                this.setState({ errorMessage: 'Password is incorrect' });
+            }
+            console.error('Error logging in: ', error.message);
         }
         
     }
@@ -82,10 +101,11 @@ export default class Welcome extends React.Component {
             return(
                 <div id = "loginContainer">
                     <h2>Please enter your user information</h2>
-                    <h3>Username:</h3>
+                    <h3>Email:</h3>
                     <input id = "userLogin" name="userLogin" type="text" onChange={this.handleChange} value={this.state.userLogin}></input>
                     <h3>Password:</h3>
                     <input id = "userPassword" name="userPassword" type="text" onChange={this.handleChange} value={this.state.userPassword}></input>
+                    <p id="titleError" className="errorAll">{this.state.errorMessage}</p>
                     <br></br>
                     <br></br>
                     <button type="submit" id="loginSubmit" onClick={this.handleReturn}>Login</button>
@@ -104,6 +124,7 @@ export default class Welcome extends React.Component {
                     <input id = "password" name="password" type="text" onChange={this.handleChange} value={this.state.password}></input>
                     <h3>Retype password:</h3>
                     <input id = "passwordVerification" name="passwordVerification" type="text" onChange={this.handleChange} value={this.state.passwordVerification}></input>
+                    <p id="titleError" className="errorAll">{this.state.errorMessage}</p>
                     <br></br>
                     <br></br>
                     <button type="submit" id="loginSubmit" onClick={this.handleReturnRegister}>Register</button>

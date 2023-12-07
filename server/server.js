@@ -14,7 +14,11 @@ const port = 8000;
 const saltRounds = 10;
 
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
+
 app.use(express.json());
 
 let tags = require('./models/tags');
@@ -53,7 +57,12 @@ db.on('connected', function() {
 app.use(
   session({
     secret: "supersecret difficult to guess string",
-    cookie: {},
+    cookie: {
+      domain: 'localhost',
+      secure: false, // Set to true if using HTTPS
+      httpOnly: true,
+
+    },
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: 'mongodb://127.0.0.1:27017/fake_so'})
@@ -230,9 +239,9 @@ app.get('/questions/:questionId', async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-  const uid= req.body.userName;
+  const email= req.body.email;
   const epw= req.body.passwordHash;
-  const user = (await users.find({userName: uid}).exec())[0];
+  const user = (await users.find({email: email}).exec())[0];
   if(user===null || user ===undefined){
     res.status(401).json({error: 'Invalid credentials'});
   }
@@ -242,11 +251,11 @@ app.post("/login", async (req, res) => {
   console.log("THE VERDICT IS: ", verdict);
   try {
     if(verdict) {
-      req.session.user = uid.trim();
+      req.session.user = email.trim();
       res.status(200).send('Login successful!');
     }
     else {
-      res.status(401).json({error: 'Invalid credentials'});
+      res.status(402).json({error: 'Invalid credentials'});
     }
   } catch (err) {
     console.error(err);
@@ -255,28 +264,48 @@ app.post("/login", async (req, res) => {
 }
 });
 
+
+
 app.post("/register", async (req, res) =>{
   const salt= await bcrypt.genSalt(saltRounds);
   const uName=req.body.userName;
   const emailName= req.body.email;
-  const pwHash=await bcrypt.hash(req.body.passwordHash, salt);
-  const newUser = new users({
-    userName:uName,
-    email: emailName,
-    passwordHash: pwHash,
-  });
+  if (await users.findOne({email: emailName})) {
+    res.status(409).send('User with that email already exists');
+  } else {
+    const pwHash=await bcrypt.hash(req.body.passwordHash, salt);
+    const newUser = new users({
+      userName:uName,
+      email: emailName,
+      passwordHash: pwHash,
+    });
 
-  try {
-    await newUser.save();
-    res.status(201).send('Registration successful');
-  }
-  catch (err) {
-    res.status(500).send('Error registering User');
+    try {
+      await newUser.save();
+      res.status(201).send('Registration successful');
+    }
+    catch (err) {
+      res.status(500).send('Error registering User');
+    }
   }
 });
 
-// app.post("/logout", async(req, res)=>{
-//   req.session.destroy(err =>{
-//     console.log("Session has been destroyed")
-//   });
-// });
+app.get("/auth", async(req, res)=>{
+  let name="Guest";
+  if (req.session.user) {
+    console.log("THERE IS A SESSION");
+    name = req.session.user;
+    res.json({login: true, userData: name } );
+  }
+  else{
+    console.log("THERE IS NO SESSION ANYMORE");
+    res.json({login: false, userData: ""} );
+  }
+
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy(err => {
+    res.redirect("/auth")
+  });
+});

@@ -74,8 +74,20 @@ function FilteredQst (question, filterText, tags) {
 export default class QuestionList extends React.Component {
     constructor(props){
         super(props);
-        this.state={clickedQuestion: null};
+        this.state={clickedQuestion: null, currentPage: 1, questionsPerPage: 5,};
         this.handleQuestionClick=this.handleQuestionClick.bind(this);
+        this.handlePrev = this.handlePrev.bind(this);
+        this.handleNext = this.handleNext.bind(this);
+    }
+
+    handlePrev() {
+        this.setState(prevState => ({
+          currentPage: prevState.currentPage - 1
+        }));
+      }
+
+    handleNext() {
+        this.setState((prevState) => ({currentPage: prevState.currentPage + 1}));
     }
 
     handleQuestionClick = async(clickedQuestion) => {
@@ -84,7 +96,7 @@ export default class QuestionList extends React.Component {
     }
 
     render() {
-        const rows = []; 
+        let rows = []; 
         const orderedQuestions = QuestionOrder(this.props.questions, this.props.threeBtn, this.props.answers);
         orderedQuestions.forEach(question =>{
             if(FilteredQst (question, this.props.searchReTwo, this.props.tags)) {
@@ -104,10 +116,31 @@ export default class QuestionList extends React.Component {
                 </div>
             );
         }
+        let currIndex = (this.state.currentPage - 1) * this.state.questionsPerPage;
+        let lastIndex = currIndex + 5;
+        let isLastpage = false;
+        if(lastIndex >= rows.length-1) {
+            lastIndex = rows.length;
+            isLastpage = true;
+        }
+        rows = rows.slice(currIndex, lastIndex);
         return (
             <div>
                 {rows}
+                <div>
+                    {this.state.currentPage > 1 && (
+                        <button onClick={this.handlePrev}>
+                        Previous
+                        </button>
+                    )}
+                    {!isLastpage && (
+                        <button onClick={this.handleNext}>
+                        Next
+                        </button>
+                    )}
+                </div>
             </div>
+            
         );
     }
 }
