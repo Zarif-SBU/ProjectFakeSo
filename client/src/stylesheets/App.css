@@ -204,6 +204,8 @@ table, th, td {
     padding-left: 20px;
     /* background-color: rgb(243, 240, 240); */
     cursor: pointer;
+}
+.questionDivNotClick{
     border-bottom: 2px dotted black;
 }
 

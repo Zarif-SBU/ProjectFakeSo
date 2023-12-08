@@ -10,17 +10,20 @@ export default class AnswerPage extends React.Component{
         this.state = {answers: [], question: this.props.question};
     }
 
-
-    updateQ= async() => {
-        await axios.get(`http://localhost:8000/questions/${this.props.question._id}`)
-          .then(response => this.setState({ question: response.data}))
-          .catch(error => console.error('Error fetching questions:', error));
-    }
-    updatedQuestion() {
+    componentDidMount() {
         this.updateQ();
-    }
+      }
+    
+      updateQ = async () => {
+        try {
+          const response = await axios.get(`http://localhost:8000/questions/${this.props.question._id}`);
+          this.setState({ question: response.data });
+        } catch (error) {
+          console.error('Error fetching questions:', error);
+        }
+      };
+
     render() {
-        this.updatedQuestion();
         return (
             <div id="replacement">
                 <QuestionDisplay question = {this.state.question}
@@ -92,8 +95,25 @@ class QuestionDisplay extends React.Component {
 }
 
 class Answers extends React.Component {
+    constructor(props){
+        super(props);
+        this.state={currentPage: 1};
+        this.handlePrev = this.handlePrev.bind(this);
+        this.handleNext = this.handleNext.bind(this);
+    }
+
+    handlePrev() {
+        this.setState(prevState => ({
+          currentPage: prevState.currentPage - 1
+        }));
+      }
+
+    handleNext() {
+        this.setState((prevState) => ({currentPage: prevState.currentPage + 1}));
+    }
     render() {
-        const rows = [];
+        
+        let rows = [];
         const ansIds = this.props.question.answers;
         if(ansIds != null) {
             ansIds.findLast(ansId => {
@@ -113,10 +133,32 @@ class Answers extends React.Component {
                 </div>
             );
         }
-
+        let currIndex = (this.state.currentPage - 1) * 5;
+        let lastIndex = currIndex + 5;
+        let isLastpage = false;
+        if(lastIndex > rows.length-1) {
+            lastIndex = rows.length;
+            isLastpage = true;
+        }
+        console.log(currIndex);
+        rows = rows.slice(currIndex, lastIndex);
         return(
             <div className="answerPage">
-                {rows}
+                <div>
+                    {rows}
+                </div>
+                <div>
+                    {this.state.currentPage > 1 && (
+                        <button onClick={this.handlePrev}>
+                        Previous
+                        </button>
+                    )}
+                    {!isLastpage && (
+                        <button onClick={this.handleNext}>
+                        Next
+                        </button>
+                    )}
+                </div>
                 <button className="answerBtn" onClick={this.props.ansBtn}> Post Answer </button>
             </div>
         );

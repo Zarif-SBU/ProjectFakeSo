@@ -116,31 +116,40 @@ export default class QuestionList extends React.Component {
                 </div>
             );
         }
-        let currIndex = (this.state.currentPage - 1) * this.state.questionsPerPage;
+        let currIndex = 0;
+        if(((this.state.currentPage - 1) * 5 )>rows.length - 1) {
+            currIndex = 0;
+            this.setState({currentPage: 1});
+        } 
+        else {
+            currIndex = (this.state.currentPage - 1) * 5;
+        }
         let lastIndex = currIndex + 5;
         let isLastpage = false;
-        if(lastIndex >= rows.length-1) {
+        if(lastIndex > rows.length-1) {
             lastIndex = rows.length;
             isLastpage = true;
         }
+        let totalQuestions = rows.length;
         rows = rows.slice(currIndex, lastIndex);
         return (
             <div>
-                {rows}
+                <div>
+                    {rows}
+                </div>
                 <div>
                     {this.state.currentPage > 1 && (
                         <button onClick={this.handlePrev}>
                         Previous
                         </button>
                     )}
-                    {!isLastpage && (
-                        <button onClick={this.handleNext}>
+                    <>   {this.state.currentPage}  out of  {totalQuestions%5}   </>
+                    {<button onClick={this.handleNext}>
                         Next
                         </button>
-                    )}
+                    }
                 </div>
             </div>
-            
         );
     }
 }
@@ -177,6 +186,10 @@ class QuestionDiv extends React.Component {
         const text = question.text;
         const name = question.asked_by ;
         const views = question.views;
+        const summary = question.summary;
+        const upVotes = question.upVotes;
+        const downVotes = question.downVotes;
+
         let replies = 0;
         if(question.answers != null) {
             replies = question.answers.length;
@@ -195,19 +208,22 @@ class QuestionDiv extends React.Component {
          });
          }
         return(
-            <div className='questionDiv' onClick={this.handleClick} >
-                <div id='questionViewsAndAnswers' key = {question._id}>
-                    <p> {views} views</p>
-                    <p> {replies} replies</p>
+            <div className='questionDivNotClick'>
+                <div className='questionDiv' onClick={this.handleClick} >
+                    <div id='questionViewsAndAnswers' key = {question._id}>
+                        <p> {views} views</p>
+                        <p> {replies} replies</p>
+                    </div>
+                    <div id='questionTitle'><h1>{title}</h1>
+                    <div id='questionSummary'><h1>{summary}</h1></div>
+                    <div id='questionTags'>{row}</div>
+                    </div>
+                    <div id='questionName'><p>{name} </p> 
+                    <p id='questionDate'>asked {this.props.question.date} </p>
+                    </div>
                 </div>
-                <div id='questionTitle'><h1>{title}</h1>
-                <div id='questionTags'>{row}</div>
-                </div>
-                <div id='questionName'><p>{name} </p> 
-                <p id='questionDate'>asked {this.props.question.date} </p>
-                </div>
-                <div></div>
-
+                <button> UpVote </button>
+                <button> DownVote </button>
             </div>
         );
     }

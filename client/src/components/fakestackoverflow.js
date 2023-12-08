@@ -60,7 +60,6 @@ export default class FakeStackOverflow extends React.Component {
     await axios.get("http://localhost:8000/auth")
       .then(response => this.setState({loginPager: response.data.login}))
       .catch(error => console.error("Error fetch session stuff: ", error));
-    console.log("luigi");
   }
   componentDidUpdate(prevProps, prevState) {
     if (
@@ -104,7 +103,6 @@ export default class FakeStackOverflow extends React.Component {
   }
 
   handleUnanswered = async() =>{
-    console.log("luigi");
     await this.retrieve();
     this.setState({threeBtn:"Unanswered"});
   }
