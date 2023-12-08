@@ -130,12 +130,21 @@ export default class QuestionList extends React.Component {
             lastIndex = rows.length;
             isLastpage = true;
         }
+<<<<<<< HEAD
         let totalPages = Math.ceil(rows.length / 5);
         let slicedRows = rows.slice(currIndex, lastIndex);
         return (
             <div>
                 <div>
                     {slicedRows}
+=======
+        let totalQuestions = rows.length;
+        rows = rows.slice(currIndex, lastIndex);
+        return (
+            <div>
+                <div>
+                    {rows}
+>>>>>>> 4997e8269c6001ae611445d5aa172d9ef8564661
                 </div>
                 <div>
                     {this.state.currentPage > 1 && (
@@ -143,7 +152,11 @@ export default class QuestionList extends React.Component {
                         Previous
                         </button>
                     )}
+<<<<<<< HEAD
                     <>   {this.state.currentPage}  out of  {totalPages} pages  </>
+=======
+                    <>   {this.state.currentPage}  out of  {totalQuestions%5}   </>
+>>>>>>> 4997e8269c6001ae611445d5aa172d9ef8564661
                     {<button onClick={this.handleNext}>
                         Next
                         </button>
