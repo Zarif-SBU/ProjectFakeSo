@@ -16,6 +16,7 @@ var AnswerSchema= new Schema(
         text:{type: String, required:true, minLength:1},
         ans_by:{type: String, required: true, minLength:1},
         ans_date_time:{type: Date, required: true, default: new Date()},
+        comments: [{type: Schema.Types.ObjectId, ref: 'Comment'}],
         votes:{type: Number, required: true, default: 0},
     },
     {

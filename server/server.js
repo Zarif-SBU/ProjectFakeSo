@@ -16,6 +16,7 @@ const saltRounds = 10;
 
 app.use(cors({
   origin: 'http://localhost:3000',
+  methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
   credentials: true,
 }));
 
@@ -58,6 +59,7 @@ app.use(
   session({
     secret: "supersecret difficult to guess string",
     cookie: {
+      maxAge: 3600000,
       domain: 'localhost',
       secure: false, // Set to true if using HTTPS
       httpOnly: true,
@@ -253,6 +255,7 @@ app.post("/login", async (req, res) => {
     if(verdict) {
       req.session.user = email.trim();
       res.status(200).send('Login successful!');
+      res.send(req.session.sessionID);
     }
     else {
       res.status(402).json({error: 'Invalid credentials'});
@@ -263,8 +266,6 @@ app.post("/login", async (req, res) => {
   }
 }
 });
-
-
 
 app.post("/register", async (req, res) =>{
   const salt= await bcrypt.genSalt(saltRounds);
@@ -290,22 +291,25 @@ app.post("/register", async (req, res) =>{
   }
 });
 
-app.get("/auth", async(req, res)=>{
-  let name="Guest";
-  if (req.session.user) {
-    console.log("THERE IS A SESSION");
-    name = req.session.user;
-    res.json({login: true, userData: name } );
+app.get("/auth", async (req, res) => {
+  if (req.session && req.session.user) {
+    res.json({ login: false, userData: req.session.user });
+  } else {
+    res.json({ login: true, userData: "" });
   }
-  else{
-    console.log("THERE IS NO SESSION ANYMORE");
-    res.json({login: false, userData: ""} );
-  }
-
 });
 
-app.post("/logout", (req, res) => {
-  req.session.destroy(err => {
-    res.redirect("/auth")
+
+
+app.post("/logout", async (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      res.status(500).json({ message: "Error destroying session" });
+    } else {
+      console.log("Session destroyed successfully");
+      res.clearCookie('sessionId'); 
+      res.json({ login: true, userData: "" });
+    }
   });
 });

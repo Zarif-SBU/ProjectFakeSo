@@ -21,6 +21,8 @@ var QuestionSchema = new Schema(
         ask_date_time: { type: Date, required: true, default: new Date() },
         views: { type: Number, default: 0},
         votes: {type: Number, default: 0},
+        summary: {type: String, default: ''},
+        comments: [{type: Schema.Types.ObjectId, ref: 'Comment'}],
     },
     {
         toObject: { getters: true },

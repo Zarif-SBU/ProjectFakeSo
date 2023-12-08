@@ -45,6 +45,7 @@ export default class FakeStackOverflow extends React.Component {
     await axios.get("http://localhost:8000/auth")
       .then(response => this.setState({loginPager: response.data.login}))
       .catch(error => console.error("Error fetch session stuff: ", error));
+    
   }
 
   retrieve = async() =>{
@@ -57,10 +58,7 @@ export default class FakeStackOverflow extends React.Component {
     await axios.get('http://localhost:8000/tags')
       .then(response => this.setState({ tags: response.data }))
       .catch(error => console.error('Error fetching tags:', error));
-    await axios.get("http://localhost:8000/auth")
-      .then(response => this.setState({loginPager: response.data.login}))
-      .catch(error => console.error("Error fetch session stuff: ", error));
-    console.log("luigi");
+    
   }
   componentDidUpdate(prevProps, prevState) {
     if (
@@ -73,8 +71,7 @@ export default class FakeStackOverflow extends React.Component {
       prevState.isClickled !== this.state.isClickled ||
       prevState.isTagsActive !== this.state.isTagsActive ||
       prevState.isQuestionsActive !== this.state.isQuestionsActive ||
-      prevState.qstDisplayed !== this.state.qstDisplayed ||
-      prevState.loginPager !== this.state.loginPager
+      prevState.qstDisplayed !== this.state.qstDisplayed 
 
     ) {
       this.retrieve();
@@ -104,7 +101,6 @@ export default class FakeStackOverflow extends React.Component {
   }
 
   handleUnanswered = async() =>{
-    console.log("luigi");
     await this.retrieve();
     this.setState({threeBtn:"Unanswered"});
   }
@@ -137,6 +133,8 @@ export default class FakeStackOverflow extends React.Component {
 
   render() {
     //displays the login page first
+    console.log("Hello: ", this.state.loginPager);
+
     if(this.state.loginPager){
       return(
         <div>
