@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-
+import CommentForm from './commentForm';
 
 
 export default class AnswerPage extends React.Component{
@@ -89,6 +89,7 @@ class QuestionDisplay extends React.Component {
                     <div id='questionN'>{name} <div id = 'questionDate'>asked {this.props.question.date}</div></div>
                     </div>
                 </div>
+                <CommentForm id = {question._id} isItQuestion = {true}/>
             </div>
         );
     }
@@ -193,11 +194,12 @@ class Answer extends React.Component {
         const text = this.hyperlinker(answer.text);
         const ansBy = answer.ans_by;
         const ansDate = answer.ansDate;
-        return(
+        return(<div>
             <div className='answerDiv'>
                 <div className='answerText' dangerouslySetInnerHTML={{__html: text}}/>
                 <div className='answerAuthor'>{ansBy}<div id='questionDate'>answered {this.props.answer.date}</div></div>
-                
+            </div>
+                <CommentForm id = {answer._id} isItQuestion = {false}/>
             </div>
         );
     }

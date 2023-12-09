@@ -12,7 +12,7 @@ import Welcome from './welcome.js';
 export default class FakeStackOverflow extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {profilePage: false, loginPager: true, questions:[], answers:[], tags:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
+    this.state = {userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
     //Tag States
     this.handleTagsEr = this.handleTagsEr.bind(this);
     //Question Home States
@@ -30,7 +30,9 @@ export default class FakeStackOverflow extends React.Component {
     this.handleSearch=this.handleSearch.bind(this);
     //login page request to then home page
     this.handleGoToLogin=this.handleGoToLogin.bind(this);
+    this.handleNewLogin=this.handleNewLogin.bind(this);
   }
+
 
   componentDidMount = async() => {
     await axios.get('http://localhost:8000/questions')
@@ -42,9 +44,17 @@ export default class FakeStackOverflow extends React.Component {
     await axios.get('http://localhost:8000/tags')
       .then(response => this.setState({ tags: response.data }))
       .catch(error => console.error('Error fetching tags:', error));
-    await axios.get("http://localhost:8000/auth")
-      .then(response => this.setState({loginPager: response.data.login}))
-      .catch(error => console.error("Error fetch session stuff: ", error));
+    // await axios.get("http://localhost:8000/auth")
+    //   .then(response => this.setState({loginPager: response.data.login, userEmail: response.data.userData }))
+    //   .catch(error => console.error("Error fetch session stuff: ", error));
+    await axios.get('http://localhost:8000/session', { withCredentials: true })
+      .then(response => {
+           console.log(response.data.session);
+           this.setState({loginPager: response.data.login, userEmail: response.data.userStuff});
+        })
+      .catch(error => {
+          console.error('Error fetching session:', error);
+      });
     
   }
 
@@ -58,10 +68,10 @@ export default class FakeStackOverflow extends React.Component {
     await axios.get('http://localhost:8000/tags')
       .then(response => this.setState({ tags: response.data }))
       .catch(error => console.error('Error fetching tags:', error));
-    await axios.get("http://localhost:8000/auth")
-      .then(response => this.setState({loginPager: response.data.login}))
-      .catch(error => console.error("Error fetch session stuff: ", error));
-    console.log("luigi");
+    // await axios.get("http://localhost:8000/auth")
+    //   .then(response => this.setState({loginPager: response.data.login, userEmail: response.data.userData}))
+    //   .catch(error => console.error("Error fetch session stuff: ", error));
+    // console.log("luigi");
   }
   componentDidUpdate(prevProps, prevState) {
     if (
@@ -74,11 +84,16 @@ export default class FakeStackOverflow extends React.Component {
       prevState.isClickled !== this.state.isClickled ||
       prevState.isTagsActive !== this.state.isTagsActive ||
       prevState.isQuestionsActive !== this.state.isQuestionsActive ||
-      prevState.qstDisplayed !== this.state.qstDisplayed 
+      prevState.qstDisplayed !== this.state.qstDisplayed ||
+      prevState.loginPager !== this.state.loginPager
 
     ) {
       this.retrieve();
     }
+  }
+  handleNewLogin = async(result) =>{
+    await this.retrieve();
+    this.setState({loginPager: result});
   }
 
   //this means that once loginpager is false, we will then be able to bypass the login screen to then have all the information for the regular page 
@@ -137,6 +152,7 @@ export default class FakeStackOverflow extends React.Component {
   render() {
     //displays the login page first
     console.log("Hello: ", this.state.loginPager);
+    console.log("Mello: ", this.state.userEmail);
 
     if(this.state.loginPager){
       return(
@@ -153,7 +169,9 @@ export default class FakeStackOverflow extends React.Component {
       return(
         <div>
           <Banner
-          searchFunc={this.handleSearch} />
+          searchFunc={this.handleSearch}
+          userName={this.state.userEmail}
+          />
           <NavigationBar
             homeFunc={this.handleHome}
             tagsFunc={this.handleTagsEr}
@@ -179,6 +197,7 @@ export default class FakeStackOverflow extends React.Component {
         <div>
           <Banner 
           searchFunc={this.handleSearch}
+          userName={this.state.userEmail}
           />
           <NavigationBar
             homeFunc={this.handleHome}
@@ -203,6 +222,7 @@ export default class FakeStackOverflow extends React.Component {
         <div>
         <Banner
         searchFunc={this.handleSearch}
+        userName={this.state.userEmail}
         />
         <NavigationBar
           homeFunc={this.handleHome}
@@ -229,7 +249,9 @@ export default class FakeStackOverflow extends React.Component {
       return (
         <div>
           <Banner 
-          searchFunc={this.handleSearch}/>
+          searchFunc={this.handleSearch}
+          userName={this.state.userEmail}
+          />
           <NavigationBar
             homeFunc={this.handleHome}
             tagsFunc={this.handleTagsEr}
@@ -254,7 +276,9 @@ export default class FakeStackOverflow extends React.Component {
       return (
         <div>
           <Banner 
-          searchFunc={this.handleSearch}/>
+          searchFunc={this.handleSearch}
+          userName={this.state.userEmail}
+          />
           <NavigationBar
             homeFunc={this.handleHome}
             tagsFunc={this.handleTagsEr}

@@ -28,7 +28,6 @@ var QuestionSchema = new Schema(
         toObject: { getters: true },
         toJSON: { getters: true },
     }
-    
 );
 
 //converts date time into a correctly formatted version to be used when the questions are displayed

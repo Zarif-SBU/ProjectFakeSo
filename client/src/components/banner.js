@@ -17,11 +17,11 @@ export default class Banner extends React.Component{
 
   async handleLogOut(){
     try {
-      await axios.post('http://localhost:8000/logout');
+      await axios.post('http://localhost:8000/logout', { withCredentials: true });
       console.log('Logging Out');
     } catch (error) {
       console.error('Error posting data:', error);
-  }
+    }
   }
 
   storeInput() {

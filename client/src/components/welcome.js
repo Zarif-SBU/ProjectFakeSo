@@ -11,6 +11,7 @@ export default class Welcome extends React.Component {
         this.handleReturn = this.handleReturn.bind(this);
         this.handleReturnRegister=this.handleReturnRegister.bind(this);
         this.handleGuest=this.handleGuest.bind(this);
+        this.handleLogOut=this.handleLogOut.bind(this);
     }
 
     handleReturnRegister = async () => {
@@ -59,7 +60,9 @@ export default class Welcome extends React.Component {
             const response = await axios.post('http://localhost:8000/login', dataStuff, { withCredentials: true });
             console.log(response.data);
             if(response.status === 200) {
-                this.props.loginFunc();
+                // this.setState({login: false});
+                // this.props.loginFunc();
+                console.log("We have reached logged in phase");
             }
             
         } catch(error) {
@@ -86,6 +89,15 @@ export default class Welcome extends React.Component {
 
     handleRegister = async() => {
         this.setState({login: false, register: true});
+    }
+
+    handleLogOut = async() =>{
+        try {
+            await axios.post('http://localhost:8000/logout', { withCredentials: true });
+            console.log('Logging Out');
+          } catch (error) {
+            console.error('Error posting data:', error);
+          }
     }
 
     handleGuest = async() => {
@@ -137,6 +149,7 @@ export default class Welcome extends React.Component {
                     <button id = "login" onClick = {this.handleLogin}>LOGIN</button>
                     <button id = "register" onClick = {this.handleRegister}>REGISTER</button>
                     <button id = "guest" onClick ={this.handleGuest}>SIGN IN AS GUEST</button>
+                    <button id = "testLogOut" onClick={this.handleLogOut}> SIGN OUT</button>
                 </div>
             </div>
         );

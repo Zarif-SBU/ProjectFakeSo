@@ -332,7 +332,6 @@ table, th, td {
 .answerDiv {
     display: flex;
     padding-left: 20px;
-    border-bottom: dotted grey;
     padding-top: 30px;
     padding-bottom: 30px;
 
@@ -465,4 +464,10 @@ color: grey;
     font-family: Helvetica;
     padding-top: 10px;
     padding-left: 20px;
+}
+.commentText{
+    padding:10px;
+    width: 100%;
+    
+    border-bottom: dotted grey;
 }
