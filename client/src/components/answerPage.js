@@ -133,7 +133,6 @@ class Answers extends React.Component {
                 </div>
             );
         }
-<<<<<<< HEAD
         let currIndex = 0;
         if(((this.state.currentPage - 1) * 5 )>rows.length - 1) {
             currIndex = 0;
@@ -142,20 +141,13 @@ class Answers extends React.Component {
         else {
             currIndex = (this.state.currentPage - 1) * 5;
         }
-=======
-        let currIndex = (this.state.currentPage - 1) * 5;
->>>>>>> 4997e8269c6001ae611445d5aa172d9ef8564661
         let lastIndex = currIndex + 5;
         let isLastpage = false;
         if(lastIndex > rows.length-1) {
             lastIndex = rows.length;
             isLastpage = true;
         }
-<<<<<<< HEAD
         let totalPages = Math.ceil(rows.length / 5);
-=======
-        console.log(currIndex);
->>>>>>> 4997e8269c6001ae611445d5aa172d9ef8564661
         rows = rows.slice(currIndex, lastIndex);
         return(
             <div className="answerPage">
@@ -168,19 +160,11 @@ class Answers extends React.Component {
                         Previous
                         </button>
                     )}
-<<<<<<< HEAD
                     <>   {this.state.currentPage}  out of  {totalPages} pages  </>
                     {<button onClick={this.handleNext}>
                         Next
                         </button>
                     }
-=======
-                    {!isLastpage && (
-                        <button onClick={this.handleNext}>
-                        Next
-                        </button>
-                    )}
->>>>>>> 4997e8269c6001ae611445d5aa172d9ef8564661
                 </div>
                 <button className="answerBtn" onClick={this.props.ansBtn}> Post Answer </button>
             </div>
