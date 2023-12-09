@@ -26,6 +26,7 @@ let tags = require('./models/tags');
 let answers = require('./models/answers');
 let questions = require('./models/questions');
 let users= require('./models/users');
+let comments = require('./models/comments');
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
@@ -96,7 +97,6 @@ app.get('/questions', async (req, res) => {
 
 app.get('/answers', async (req, res) => {
   try {
-    
     res.json(await answers.find());
   } catch (error) {
     console.error('Error fetching answers:', error);
@@ -110,6 +110,16 @@ app.get('/tags', async (req, res) => {
     res.json(await tags.find());
   } catch (error) {
     console.error('Error fetching answers:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/comments', async (req, res) => {
+  try {
+    res.json(await comments.find());
+    res.json(test);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -291,25 +301,69 @@ app.post("/register", async (req, res) =>{
   }
 });
 
-app.get("/auth", async (req, res) => {
-  if (req.session && req.session.user) {
-    res.json({ login: false, userData: req.session.user });
-  } else {
-    res.json({ login: true, userData: "" });
+app.get('/session', (req, res) => {
+  let loginS=true;
+  let name="";
+  if(req.session.user){
+      console.log("We so back Bois");
+      loginS=false;
+      name=req.session.user;
   }
+  else{
+      loginS=true;
+      name="Guest";
+  }
+  res.json({ session: req.session, login: loginS, userStuff: name });
+});
+
+// app.get("/auth", async (req, res) => {
+//   let name="Guest";
+//   if (req.session.user) {
+//     name=res.session.user;
+//     console.log("ANDDD THERE IS A SESSION MY G");
+//     res.json({ login: false, userData: name });
+//   } else {
+//     console.log("NOPE NOPE NO SESSION");
+//     res.json({ login: true, userData: name });
+//   }
+// });
+
+app.post("/logout", async (req, res) => {
+  req.sessionStore.destroy((err) => {
+    console.log("error stuff: ", err)
+  });
 });
 
 
-
-app.post("/logout", async (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error("Error destroying session:", err);
-      res.status(500).json({ message: "Error destroying session" });
-    } else {
-      console.log("Session destroyed successfully");
-      res.clearCookie('sessionId'); 
-      res.json({ login: true, userData: "" });
+app.post('/comments/create', async (req, res) => {
+  try {
+    const text = req.body.text;
+    let newComment = new comments({
+      text: text,
+      comment_by: 'user1',
+      comment_date_time: new Date(),
+      votes: 0
+    });
+    let savedComment = await newComment.save();
+    const id = req.body.id;
+    const isItQuestion = req.body.isItQuestion;
+    if(isItQuestion) {
+      await questions.findByIdAndUpdate(
+        id,
+        { $push: { comments: savedComment._id } },
+        { new: true }
+      );
     }
-  });
+    else {
+      await answers.findByIdAndUpdate(
+        id,
+        { $push: { comments: savedComment._id } },
+        { new: true }
+      );
+    }
+    res.json({ message: 'Comment created successfully', comment: savedComment });
+  } catch (error) {
+      console.error('Error creating comment:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
 });

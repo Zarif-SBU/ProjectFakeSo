@@ -40,6 +40,7 @@ export default class CommentsList extends React.Component {
                         />);
             }
         });
+        
         let currIndex = 0;
         if(((this.state.currentPage - 1) * 5 )>rows.length - 1) {
             currIndex = 0;
@@ -58,7 +59,7 @@ export default class CommentsList extends React.Component {
         let slicedRows = rows.slice(currIndex, lastIndex);
 
 
-        return(
+        return (
             <div>
                 <div>
                     {slicedRows}
@@ -75,8 +76,9 @@ export default class CommentsList extends React.Component {
                         </button>
                     }
                 </div>
-            </div>);
-        }
+            </div>
+        );
+    }
 }
 
 class CommentDiv extends React.Component{
