@@ -17,7 +17,6 @@ var CommentSchema = new Schema(
         comment_date_time:{type: Date, required: true, default: new Date()},
         votes:{type: Number, required: true, default: 0},
         userEmail: {type: String, default: "testcase@test.com"},
-        userName: {type: String, default: ""},
         voteEmails:[{type: String}],
     },
     {

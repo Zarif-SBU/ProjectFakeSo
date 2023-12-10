@@ -7,7 +7,7 @@ import axios from 'axios';
 export default class QuestionForm extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { valueTitle: "", valueText: "", valueTag: "", valueName: "", valueSummary: "" };
+        this.state = { valueTitle: "", valueText: "", valueTag: "", valueSummary: "", valueEmail: ""};
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -47,6 +47,7 @@ export default class QuestionForm extends React.Component {
             }
         }
 
+        
 
         let dataStuff = {
             title: newtitle,
@@ -56,7 +57,8 @@ export default class QuestionForm extends React.Component {
             asked_by: newname,
             ask_date_time: newdate,
             views: 0,
-            summary: newSummary
+            summary: newSummary,
+            userEmail: newname
         };
 
         try {
@@ -67,6 +69,8 @@ export default class QuestionForm extends React.Component {
         }
 
     }
+
+    
 
     handleSubmit(event) {
         let tagArray = this.state.valueTag.split(" ");
@@ -102,16 +106,11 @@ export default class QuestionForm extends React.Component {
                 }
             }
 
-            if (this.state.valueName.trim() === "") {
-                throw "userempty";
-            }
-
-
             //if no errors, reset all errors and return back home and all
             this.setState({ titleError: "", userError: "", textError: "", tagError: "", summaryError: "" });
             let newDate = new Date();
             //Now, it will store it into model.js
-            this.postNewUser(this.state.valueTitle, this.state.valueText, tagArray, this.state.valueName, newDate, this.state.valueSummary);
+            this.postNewUser(this.state.valueTitle, this.state.valueText, tagArray, this.props.userEmail, newDate, this.state.valueSummary);
 
             //PASS EVERYTHING INTO MODEL.JS
             this.props.returnFunc();
@@ -136,9 +135,7 @@ export default class QuestionForm extends React.Component {
             else if (err === "tagMany") {
                 this.setState({ tagError: "*There can only be 5 tags*", userError: "", textError: "", titleError: "", summaryError:"" });
             }
-            else if (err === "userempty") {
-                this.setState({ userError: "User is empty", titleError: "", textError: "", tagError: "", summaryError:"" });
-            }
+            
 
         }
 
@@ -180,13 +177,6 @@ export default class QuestionForm extends React.Component {
 
 
                 <p id="tagError" className="errorAll">{this.state.tagError}</p>
-
-
-                <h3>Username*</h3>
-                <input className="qstBox" name="valueName" type="text" id="qstUsers" onChange={this.handleChange} value={this.state.valueName}></input>
-                <br></br>
-                <p id="userError" className="errorAll">{this.state.userError}</p>
-
 
                 <button id="qstSubmit" onClick={this.handleSubmit}>Post Question</button>
 

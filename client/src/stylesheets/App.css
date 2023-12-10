@@ -334,7 +334,8 @@ table, th, td {
     padding-left: 20px;
     padding-top: 30px;
     padding-bottom: 30px;
-
+    border-bottom: dashed grey;
+    background-color: #ecdbc9;
 }
 .answerText{
     width: 85%;
@@ -468,4 +469,20 @@ color: grey;
 .commentText{
     padding: 8px;
     width: 95%;
+}
+
+.commentForm{
+}
+
+.answerAndCommentDiv{
+    border: solid 3px black;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+#comment_by{
+    margin-left: 20px;
+    border-bottom: dashed grey 5px;
 }

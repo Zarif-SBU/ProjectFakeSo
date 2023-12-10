@@ -34,6 +34,7 @@ export default class AnswerPage extends React.Component{
         return (
             <div id="replacement" key={this.state.keyForRemount}>
                 <QuestionDisplay 
+                    userEmail = {this.props.userEmail}
                     question = {this.state.question}
                     questionFuncTwo={this.props.questionFunc}
                     comments={this.state.comments}
@@ -45,6 +46,7 @@ export default class AnswerPage extends React.Component{
                     ansBtn ={this.props.ansBtn}
                     comments={this.state.comments}
                     onSubmit = {this.handleNewComment}
+                    userEmail = {this.props.userEmail}
                 />
             </div>
         );
@@ -73,7 +75,7 @@ class QuestionDisplay extends React.Component {
         const question = this.props.question;
         const title = question.title;
         const text = this.hyperlinker(question.text);
-        const name = question.askedBy;
+        const name = question.asked_by;
         const views = question.views;
         let replies = 0;
         if(question.answers != null) {
@@ -103,7 +105,7 @@ class QuestionDisplay extends React.Component {
                     </div>
                 </div>
                 <CommentsList ids = {question.comments} comments={this.props.comments}/> 
-                <CommentForm id = {question._id} isItQuestion = {true} onSubmit = {this.props.onSubmit}/>
+                <CommentForm id = {question._id} isItQuestion = {true} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail}/>
             </div>
         );
     }
@@ -134,7 +136,7 @@ class Answers extends React.Component {
             ansIds.findLast(ansId => {
                 this.props.answers.forEach((answer) =>{
                     if(answer._id === ansId) {
-                        rows.push(<Answer answer = {answer} comments={this.props.comments} onSubmit = {this.props.onSubmit}/>)
+                        rows.push(<Answer answer = {answer} comments={this.props.comments} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail}/>)
                     }
                 });
             });
@@ -148,6 +150,7 @@ class Answers extends React.Component {
                 </div>
             );
         }
+        
         let currIndex = 0;
         if(((this.state.currentPage - 1) * 5 )>rows.length - 1) {
             currIndex = 0;
@@ -161,11 +164,11 @@ class Answers extends React.Component {
             lastIndex = rows.length;
         }
         let totalPages = Math.ceil(rows.length / 5);
-        rows = rows.slice(currIndex, lastIndex);
+        let slicerows = rows.slice(currIndex, lastIndex);
         return(
             <>
                 <div>
-                    {rows}
+                    {slicerows}
                 </div>
                 <div>
                     {this.state.currentPage > 1 && (
@@ -206,14 +209,14 @@ class Answer extends React.Component {
         const text = this.hyperlinker(answer.text);
         const ansBy = answer.ans_by;
         const ansDate = answer.ansDate;
-        return(<>
+        return(<div className='answerAndCommentDiv'>
             <div className='answerDiv'>
                 <div className='answerText' dangerouslySetInnerHTML={{__html: text}}/>
                 <div className='answerAuthor'>{ansBy}<div id='questionDate'>answered {this.props.answer.date}</div></div>
             </div>
                 <CommentsList ids = {answer.comments} comments={this.props.comments}/> 
-                <CommentForm id = {answer._id} isItQuestion = {false} onSubmit = {this.props.onSubmit}/>
-            </>
+                <CommentForm id = {answer._id} isItQuestion = {false} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail}/>
+            </div>
         );
     }
 }

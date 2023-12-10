@@ -5,7 +5,7 @@ import axios from 'axios';
 export default class AnswerForm extends React.Component {
     constructor(props){
         super(props);
-        this.state={ansName:"", ansText:""};
+        this.state={ansText:""};
        
         this.handleChange=this.handleChange.bind(this);
         this.handleSubmit=this.handleSubmit.bind(this);
@@ -23,6 +23,7 @@ export default class AnswerForm extends React.Component {
           text: newtext,
           ans_by: newname,
           ans_date_time: newdate,
+          userEmail: newname
         };
      
         try {
@@ -49,19 +50,12 @@ export default class AnswerForm extends React.Component {
 
     async handleSubmit(event){
         try{
-            if(this.state.ansName.trim() === ""){
-                throw "useAnswer_E";
-            }
             if(this.state.ansText.trim() === ""){
                 throw "textAnswer_E";
             }
-
-
-            console.log(this.state.ansName);
-            console.log(this.state.ansText);
             //Now, add it to the answer database and then push it to the question schema
             let tempDate = new Date();
-            let newAnswerId = await this.postAnswer(this.state.ansName, this.state.ansText, tempDate);
+            let newAnswerId = await this.postAnswer(this.props.userEmail, this.state.ansText, tempDate);
             console.log(newAnswerId);
 
             //adds it to the question scehma now
@@ -73,13 +67,9 @@ export default class AnswerForm extends React.Component {
            
         }
         catch(err){
-            if(err==="useAnswer_E")
+             if(err==="textAnswer_E")
               {
-                this.setState({nameAnsError:"Input is empty", textAnsError:""});
-              }
-            else if(err==="textAnswer_E")
-              {
-                this.setState({nameAnsError:"", textAnsError:"Input is empty"});
+                this.setState({textAnsError:"Input is empty"});
               }
 
 
@@ -90,13 +80,6 @@ export default class AnswerForm extends React.Component {
     render() {
         return (
             <div id="askQst_inner">
-                <h3>Username*</h3>
-                <input className="qstBox" id="ansUser" name="ansName" type="text" onChange={this.handleChange} value={this.state.ansName}></input>
-
-
-                <p id="userAnsErr" className="errorAll">{this.state.nameAnsError}</p>
-
-
                 <br></br>
                 <h3>Answer Text*</h3>
                 <textarea id="ansText" size="30" rows="10" cols="40" name="ansText" onChange={this.handleChange} value={this.state.ansText}></textarea>

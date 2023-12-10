@@ -8,11 +8,12 @@ import AnswerPage from './answerPage.js';
 import axios from 'axios';
 import QuestionList from './TestList.js';
 import Welcome from './welcome.js';
+import ProfilePage from './profilePage.js';
 
 export default class FakeStackOverflow extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], comments:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
+    this.state = { userDate: "", userN: "Annoymous", userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], comments:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
     //Tag States
     this.handleTagsEr = this.handleTagsEr.bind(this);
     //Question Home States
@@ -31,6 +32,9 @@ export default class FakeStackOverflow extends React.Component {
     //login page request to then home page
     this.handleGoToLogin=this.handleGoToLogin.bind(this);
     this.handleNewLogin=this.handleNewLogin.bind(this);
+    //for profile page
+    this.handleProfilePage=this.handleProfilePage.bind(this);
+
   }
 
 
@@ -46,13 +50,10 @@ export default class FakeStackOverflow extends React.Component {
       .catch(error => console.error('Error fetching tags:', error));
     await axios.get('http://localhost:8000/comments')
       .then(response => this.setState({ comments: response.data}))
-    // await axios.get("http://localhost:8000/auth")
-    //   .then(response => this.setState({loginPager: response.data.login, userEmail: response.data.userData }))
-    //   .catch(error => console.error("Error fetch session stuff: ", error));
     await axios.get('http://localhost:8000/session', { withCredentials: true })
       .then(response => {
            console.log(response.data.session);
-           this.setState({loginPager: response.data.login, userEmail: response.data.userStuff});
+           this.setState({loginPager: response.data.login, userEmail: response.data.userStuff, userN: response.data.userNN, userDate: response.data.userDD});
         })
       .catch(error => {
           console.error('Error fetching session:', error);
@@ -71,9 +72,15 @@ export default class FakeStackOverflow extends React.Component {
       .catch(error => console.error('Error fetching tags:', error));
     await axios.get('http://localhost:8000/comments')
       .then(response => this.setState({ comments: response.data}))
-    // await axios.get("http://localhost:8000/auth")
-    //   .then(response => this.setState({loginPager: response.data.login, userEmail: response.data.userData}))
-    //   .catch(error => console.error("Error fetch session stuff: ", error));
+    await axios.get('http://localhost:8000/session', { withCredentials: true })
+      .then(response => {
+           console.log(response.data.session);
+           this.setState({loginPager: response.data.login, userEmail: response.data.userStuff, userN: response.data.userNN, userDate: response.data.userDD});
+        })
+      .catch(error => {
+          console.error('Error fetching session:', error);
+      });
+
     // console.log("luigi");
   }
   componentDidUpdate(prevProps, prevState) {
@@ -88,11 +95,14 @@ export default class FakeStackOverflow extends React.Component {
       prevState.isTagsActive !== this.state.isTagsActive ||
       prevState.isQuestionsActive !== this.state.isQuestionsActive ||
       prevState.qstDisplayed !== this.state.qstDisplayed ||
-      prevState.loginPager !== this.state.loginPager
+      prevState.profilePage !== this.state.profilePage ||
+      prevState.loginPager !== this.state.loginPager 
     ) {
       this.retrieve();
     }
   }
+  //a test
+
   handleNewLogin = async(result) =>{
     await this.retrieve();
     this.setState({loginPager: result});
@@ -127,34 +137,65 @@ export default class FakeStackOverflow extends React.Component {
 
   handleAnswerForm = async() =>{
     await this.retrieve();
-    this.setState({ showAns: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false});
+    this.setState({ profilePage:false, showAns: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false});
   }
 
   clickQuestion = async(clickedQuestion) =>{
     await this.retrieve();
     //now qstDisplayed has to value of clickedQuestion, the object
-    this.setState({isClickled: true, qstDisplayed: clickedQuestion, showForm: false, showQuestions: false, tagForm: false, showAns: false});
+    this.setState({isClickled: true, qstDisplayed: clickedQuestion, profilePage:false, showForm: false, showQuestions: false, tagForm: false, showAns: false});
   }
 
   openQuestionForm = async() => {
     await this.retrieve();
-    this.setState({ showForm: true, showQuestions: false, tagForm: false, isClickled: false, showAns: false});
+    this.setState({ profilePage:false, showForm: true, showQuestions: false, tagForm: false, isClickled: false, showAns: false});
   }
 
   handleTagsEr = async() => {
     await this.retrieve();
-    this.setState({ showForm: false, showQuestions: false, tagForm: true, isTagsActive: true, isQuestionsActive: false, isClickled: false, showAns: false });
+    this.setState({ showForm: false, profilePage:false, showQuestions: false, tagForm: true, isTagsActive: true, isQuestionsActive: false, isClickled: false, showAns: false });
   }
 
   handleHome = async() => {
     await this.retrieve();
-    this.setState({ searchRe: "",showQuestions: true, showForm: false, tagForm: false, isTagsActive: false, isQuestionsActive: true, isClickled: false, showAns: false});
+    this.setState({ searchRe: "",showQuestions: true, profilePage:false, showForm: false, tagForm: false, isTagsActive: false, isQuestionsActive: true, isClickled: false, showAns: false});
+  }
+
+  handleProfilePage=async()=>{
+    await this.retrieve();
+    this.setState({ profilePage: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false, showAns: false});
+
   }
 
   render() {
     //displays the login page first
-    console.log("Hello: ", this.state.loginPager);
-    console.log("Mello: ", this.state.userEmail);
+    // console.log("Hello: ", this.state.loginPager);
+    // console.log("Mello: ", this.state.userEmail);
+    //if the profilePage is true, then we go to the users profile page
+    if(this.state.profilePage){
+      return(
+        <div>
+          <Banner
+          searchFunc={this.handleSearch}
+          userName={this.state.userEmail}
+          userN={this.state.userN}
+          goProfile={this.handleProfilePage}
+          />
+          <NavigationBar
+            homeFunc={this.handleHome}
+            tagsFunc={this.handleTagsEr}
+            isTagsActive={this.state.isTagsActive}  // Pass the state to the NavigationBar
+            isQuestionsActive={this.state.isQuestionsActive}  // Pass the state to the NavigationBar
+          />
+          <ProfilePage
+            userEmail={this.state.userEmail}
+            userN={this.state.userN}
+            userD={this.state.userDate}
+          />
+        </div>
+      );
+    }
+
 
     if(this.state.loginPager){
       return(
@@ -173,6 +214,8 @@ export default class FakeStackOverflow extends React.Component {
           <Banner
           searchFunc={this.handleSearch}
           userName={this.state.userEmail}
+          userN={this.state.userN}
+          goProfile={this.handleProfilePage}
           />
           <NavigationBar
             homeFunc={this.handleHome}
@@ -183,7 +226,7 @@ export default class FakeStackOverflow extends React.Component {
           <div className="FormContainerClass">
             <AnswerForm
               answers = {this.state.answers}
-              //temp handleHome
+              userEmail={this.state.userEmail}
               returnFunc={this.clickQuestion}
               questionIt = {this.state.qstDisplayed} 
             />
@@ -200,6 +243,8 @@ export default class FakeStackOverflow extends React.Component {
           <Banner 
           searchFunc={this.handleSearch}
           userName={this.state.userEmail}
+          userN={this.state.userN}
+          goProfile={this.handleProfilePage}
           />
           <NavigationBar
             homeFunc={this.handleHome}
@@ -211,6 +256,7 @@ export default class FakeStackOverflow extends React.Component {
             <QuestionForm
               tag={this.state.tags}
               returnFunc={this.handleHome}
+              userEmail = {this.state.userEmail}
             />
           </div>
          
@@ -225,6 +271,8 @@ export default class FakeStackOverflow extends React.Component {
         <Banner
         searchFunc={this.handleSearch}
         userName={this.state.userEmail}
+        userN={this.state.userN}
+        goProfile={this.handleProfilePage}
         />
         <NavigationBar
           homeFunc={this.handleHome}
@@ -234,6 +282,7 @@ export default class FakeStackOverflow extends React.Component {
         />
         <div className="FormContainerClass">
         <AnswerPage
+          userEmail = {this.state.userEmail}
           questionBtn={this.openQuestionForm}
           question = {this.state.qstDisplayed} 
           answers = {this.state.answers}
@@ -253,6 +302,8 @@ export default class FakeStackOverflow extends React.Component {
           <Banner 
           searchFunc={this.handleSearch}
           userName={this.state.userEmail}
+          userN={this.state.userN}
+          goProfile={this.handleProfilePage}
           />
           <NavigationBar
             homeFunc={this.handleHome}
@@ -280,6 +331,8 @@ export default class FakeStackOverflow extends React.Component {
           <Banner 
           searchFunc={this.handleSearch}
           userName={this.state.userEmail}
+          userN={this.state.userN}
+          goProfile={this.handleProfilePage}
           />
           <NavigationBar
             homeFunc={this.handleHome}
@@ -289,6 +342,7 @@ export default class FakeStackOverflow extends React.Component {
           />
           <div className="FormContainerClass">
             <DisplayText
+              userEmail = {this.state.userEmail}
               questions = {this.state.questions}
               answers = {this.state.answers}
               tags = {this.state.tags}
@@ -335,6 +389,7 @@ class DisplayText extends React.Component {
         </div>
         <div className="questionPage">
           <QuestionList
+            userEmail = {this.props.userEmail}
             answers = {this.props.answers}
             questions = {this.props.questions}
             tags = {this.props.tags}

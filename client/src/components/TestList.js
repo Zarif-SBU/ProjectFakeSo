@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import axios from 'axios';
 
 
@@ -101,6 +101,7 @@ export default class QuestionList extends React.Component {
         orderedQuestions.forEach(question =>{
             if(FilteredQst (question, this.props.searchReTwo, this.props.tags)) {
                 rows.push(<QuestionDiv
+                            userEmail = {this.props.userEmail}
                             question = {question}
                             key = {question._id}
                             tags = {this.props.tags}
@@ -116,6 +117,7 @@ export default class QuestionList extends React.Component {
                 </div>
             );
         }
+        
         let currIndex = 0;
         if(((this.state.currentPage - 1) * 5 )>rows.length - 1) {
             currIndex = 0;
@@ -161,13 +163,23 @@ class QuestionDiv extends React.Component {
 
     incrementViews = async () => {
         try {
-          const res = await axios.post(`http://localhost:8000/questions/${this.props.question._id}/increment-views`);
+          const res = await axios.post(`http://localhost:8000/questions/${this.props.question}/increment-views`);
           const updatedQuestion = res.data;
           this.setState({ question: updatedQuestion });
         } catch (err) {
           console.error('Error incrementing views:', err);
         }
-      };
+    };
+
+    handleUpVote = async () =>  {
+        try{
+            const response = await axios.post(`http://localhost:8000/question/increment-vote`, {userEmail: this.props.userEmail, question: this.props.question});
+            const updatedQuestion = response.data;
+            this.setState({ question: updatedQuestion });
+        }catch(error) {
+            console.error('Error incrementing views:', error);
+        }
+    }
 
     handleClick = async () => {
         await this.incrementViews();
@@ -181,13 +193,10 @@ class QuestionDiv extends React.Component {
     render() { 
         const question = this.state.question;
         const title = question.title;
-        const text = question.text;
         const name = question.asked_by ;
         const views = question.views;
         const summary = question.summary;
-        const upVotes = question.upVotes;
-        const downVotes = question.downVotes;
-
+        const votes = question.votes;
         let replies = 0;
         if(question.answers != null) {
             replies = question.answers.length;
@@ -211,6 +220,7 @@ class QuestionDiv extends React.Component {
                     <div id='questionViewsAndAnswers' key = {question._id}>
                         <p> {views} views</p>
                         <p> {replies} replies</p>
+                        <p> {votes} votes </p>
                     </div>
                     <div id='questionTitle'><h1>{title}</h1>
                     <div id='questionSummary'><h1>{summary}</h1></div>
@@ -220,7 +230,7 @@ class QuestionDiv extends React.Component {
                     <p id='questionDate'>asked {this.props.question.date} </p>
                     </div>
                 </div>
-                <button> UpVote </button>
+                <button onClick={this.handleUpVote}> UpVote </button>
                 <button> DownVote </button>
             </div>
         );

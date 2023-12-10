@@ -123,7 +123,21 @@ app.get('/comments', async (req, res) => {
   }
 });
 
+app.get('user/:email/getUserName', async (req, res) =>{
+  try {
+    if(req.params.email === "Guest"){
+      res.json("Guest");
+    }
+    else{
+      const user = (await users.find({email: req.params.email}).exec())[0];
+      res.json(user.userName);
+    }
+  } catch(error) {
+    console.error("Error getting user name", error);
+    res.status(500).json({ message: 'Server Error' });
+  }
 
+});
 
 app.use("/createQuestion", addMsgToRequest);
 app.use('/createQuestion', addMsgToResponse);
@@ -143,6 +157,50 @@ app.post("/questions/:questionId/increment-views", async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
+app.post("/question/increment-vote", async (req, res) => {
+  const questionId = req.body.question._id;
+  const email = req.body.userEmail;
+
+  let question;
+
+  question = await questions.findById(questionId);
+
+  if (question.upVoteEmails.includes(email)) {
+    question = await questions.findByIdAndUpdate(
+      questionId,
+      { $inc: { votes: -1 } },
+      { new: true }
+    );
+
+    const upVoteIndex = question.upVoteEmails.indexOf(email);
+    if (upVoteIndex !== -1) {
+      question.upVoteEmails.splice(upVoteIndex, 1);
+    }
+  } else if (question.downVoteEmails.includes(email)) {
+    question = await questions.findByIdAndUpdate(
+      questionId,
+      { $inc: { votes: 2 } },
+      { new: true }
+    );
+
+    const downVoteIndex = question.downVoteEmails.indexOf(email);
+    if (downVoteIndex !== -1) {
+      question.downVoteEmails.splice(downVoteIndex, 1);
+    }
+  } else {
+    question = await questions.findByIdAndUpdate(
+      questionId,
+      { $inc: { votes: 1 } },
+      { new: true }
+    );
+
+    question.upVoteEmails.push(email);
+  }
+
+  res.json(question);
+});
+
 
 app.post("/questions/:questionId", async (req, res) => {
   try {
@@ -201,7 +259,18 @@ app.post("/questions/:questionId/add-answer", async(req, res) =>{
 app.post('/createQuestion', async (req, res) => {
   try {
       const newQuestion = req.body;
-      const newStuff = new questions(newQuestion); // Use 'questions' instead of 'Question'
+      if(newQuestion.asked_by === "Guest"){
+        newQuestion.asked_by="Anonymous";
+      }
+      else{
+        const user = await users.findOne(
+          { email: newQuestion.userEmail },
+          { userName: 1, _id: 0 }
+        );
+        newQuestion.asked_by = user.userName;
+      }
+      
+      const newStuff = new questions(newQuestion);
       await newStuff.save();
       console.log('Question created successfully');
       res.status(201).json({ message: 'Question created successfully' });
@@ -217,20 +286,27 @@ app.use("/createAnswer", addMsgToResponse);
 
 app.post("/createAnswer", async (req, res) => {
   try {
-    const newAnswer = req.body;
-    const newAnswerStuff = new answers(newAnswer);
-    await newAnswerStuff.save();
-    console.log('Answer created successfully');
+      const newAnswer = req.body;
+      if(newAnswer.ans_by === "Guest"){
+        newAnswer.ans_by = "Anonymous";
+      }
+      else{
+        const user = await users.findOne(
+          { email: newAnswer.userEmail },
+          { userName: 1, _id: 0 }
+        );
+        newAnswer.ans_by = user.userName;
+      }
+      const newAnswerStuff = new answers(newAnswer);
+      await newAnswerStuff.save();
+      console.log('Answer created successfully');
 
-    res.status(201).json({ message: 'Answer created successfully', answerId: newAnswerStuff._id });
-
-
+      res.status(201).json({ message: 'Answer created successfully', answerId: newAnswerStuff._id });
   } catch (err) {
     console.error('Error creating answer:', err);
     res.status(500).json({ message: 'Server Error' });
   }
 });
-
 
 app.use("/createTag", addMsgToRequest);
 app.use('/createTag', addMsgToResponse);
@@ -251,6 +327,49 @@ app.post("/createTag", async (req, res) => {
   }
 });
 
+app.post('/createComment', async (req, res) => {
+  try {
+    const text = req.body.text;
+    const email = req.body.userEmail;
+    console.log("test", req.body.userEmail);
+    const user = await users.findOne(
+      { email: email},
+      { userName: 1, _id: 0 }
+    );
+    
+    const userName = user.userName;
+    let newComment = new comments({
+      text: text,
+      comment_by: userName,
+      comment_date_time: new Date(),
+      votes: 0,
+      userEmail: email
+    });
+
+    let savedComment = await newComment.save();
+    const id = req.body.id;
+    const isItQuestion = req.body.isItQuestion;
+    if(isItQuestion) {
+      await questions.findByIdAndUpdate(
+        id,
+        { $push: { comments: savedComment._id } },
+        { new: true }
+      );
+    }
+    else {
+      await answers.findByIdAndUpdate(
+        id,
+        { $push: { comments: savedComment._id } },
+        { new: true }
+      );
+    }
+    res.json({ message: 'Comment created successfully', comment: savedComment });
+  } catch (error) {
+      console.error('Error creating comment:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.get('/questions/:questionId', async (req, res) => {
   try {
     const questionId = req.params.questionId;
@@ -260,6 +379,21 @@ app.get('/questions/:questionId', async (req, res) => {
     console.error('Error fetching question:', error);
     res.status(500).json({ error: 'Server Error' });
   }
+});
+
+app.post("/guest", async (req,res)=>{
+  const name=req.body.email;
+  try{
+    req.session.user=name.trim();
+    res.status(200).send("Guest Login Successful");
+    res.send(req.session.sessionID);
+  }
+  catch(error){
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+  
+
 });
 
 app.post("/login", async (req, res) => {
@@ -313,70 +447,39 @@ app.post("/register", async (req, res) =>{
   }
 });
 
-app.get('/session', (req, res) => {
+app.get('/session', async (req, res) => {
   let loginS=true;
   let name="";
+  //N is user name, D is user date, and R is user reputation
+  let userN="";
+  let userD="";
+  let userR="";
+
   if(req.session.user){
-      console.log("We so back Bois");
       loginS=false;
       name=req.session.user;
+      if(req.session.user ==="Guest"){
+        userN="Guest";
+      }
+      else{
+        userN= (await users.find({email: req.session.user}).exec())[0].userName;
+        userD= (await users.find({email: req.session.user}).exec())[0].date;
+      }
   }
   else{
       loginS=true;
       name="Guest";
   }
-  res.json({ session: req.session, login: loginS, userStuff: name });
+  res.json({ session: req.session, login: loginS, userStuff: name, userNN: userN, userDD: userD });
 });
 
-// app.get("/auth", async (req, res) => {
-//   let name="Guest";
-//   if (req.session.user) {
-//     name=res.session.user;
-//     console.log("ANDDD THERE IS A SESSION MY G");
-//     res.json({ login: false, userData: name });
-//   } else {
-//     console.log("NOPE NOPE NO SESSION");
-//     res.json({ login: true, userData: name });
-//   }
-// });
 
 app.post("/logout", async (req, res) => {
   req.sessionStore.destroy((err) => {
     console.log("error stuff: ", err)
   });
+  res.status(200).send('Log out Successful');
+
 });
 
-
-app.post('/createComment', async (req, res) => {
-  try {
-    const text = req.body.text;
-    let newComment = new comments({
-      text: text,
-      comment_by: 'user1',
-      comment_date_time: new Date(),
-      votes: 0
-    });
-    let savedComment = await newComment.save();
-    const id = req.body.id;
-    const isItQuestion = req.body.isItQuestion;
-    if(isItQuestion) {
-      await questions.findByIdAndUpdate(
-        id,
-        { $push: { comments: savedComment._id } },
-        { new: true }
-      );
-    }
-    else {
-      await answers.findByIdAndUpdate(
-        id,
-        { $push: { comments: savedComment._id } },
-        { new: true }
-      );
-    }
-    res.json({ message: 'Comment created successfully', comment: savedComment });
-  } catch (error) {
-      console.error('Error creating comment:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 

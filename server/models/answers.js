@@ -19,7 +19,6 @@ var AnswerSchema= new Schema(
         comments: [{type: Schema.Types.ObjectId, ref: 'Comment'}],
         votes:{type: Number, required: true, default: 0},
         userEmail: {type: String, default: "testcase@test.com"},
-        userName: {type: String, default: ""},
         uptVoteEmails:[{type: String}],
         downVoteEmails:[{type: String}],
     },

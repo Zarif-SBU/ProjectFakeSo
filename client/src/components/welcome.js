@@ -12,7 +12,14 @@ export default class Welcome extends React.Component {
         this.handleReturnRegister=this.handleReturnRegister.bind(this);
         this.handleGuest=this.handleGuest.bind(this);
         this.handleLogOut=this.handleLogOut.bind(this);
+        this.handleRefresh=this.handleRefresh.bind(this);
     }
+
+    handleRefresh = () => {
+        // Force a page refresh
+        console.log("Heyo");
+        window.location.reload();
+      };
 
     handleReturnRegister = async () => {
         let dataStuff = {
@@ -63,6 +70,7 @@ export default class Welcome extends React.Component {
                 // this.setState({login: false});
                 // this.props.loginFunc();
                 console.log("We have reached logged in phase");
+                this.handleRefresh();
             }
             
         } catch(error) {
@@ -101,10 +109,26 @@ export default class Welcome extends React.Component {
     }
 
     handleGuest = async() => {
-        //do the setup for setting a guest session then u would want to go activate my handleGoToLogin function to then go back
+        let newData={
+            email: "Guest"
+        };
 
-        //Return back home once it is done
-        this.props.loginFunc();
+        try{
+            const res=await axios.post('http://localhost:8000/guest', newData,{ withCredentials: true });
+            console.log(res.data);
+            if(res.status === 200) {
+                // this.setState({login: false});
+                // this.props.loginFunc();
+                console.log("We have reached logged in phase");
+                this.handleRefresh();
+            }
+
+        }
+        catch(err){
+            console.log("Error: ", err);
+        }
+
+
     }
 
     render() {

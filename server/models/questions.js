@@ -24,8 +24,7 @@ var QuestionSchema = new Schema(
         summary: {type: String, default: ''},
         comments: [{type: Schema.Types.ObjectId, ref: 'Comment'}],
         userEmail: {type: String, default: "testcase@test.com"},
-        userName: {type: String, default: ""},
-        uptVoteEmails:[{type: String}],
+        upVoteEmails:[{type: String}],
         downVoteEmails:[{type: String}],
     },
     {
