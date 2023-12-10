@@ -104,7 +104,7 @@ class QuestionDisplay extends React.Component {
                     <div id='questionN'>{name} <div id = 'questionDate'>asked {this.props.question.date}</div></div>
                     </div>
                 </div>
-                <CommentsList ids = {question.comments} comments={this.props.comments}/> 
+                <CommentsList ids = {question.comments} comments={this.props.comments} userEmail = {this.props.userEmail}/> 
                 <CommentForm id = {question._id} isItQuestion = {true} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail}/>
             </div>
         );
@@ -194,11 +194,30 @@ class Answer extends React.Component {
         this.state = {
             isUpvoted: false,
             isDownvoted: false,
+            answer: this.props.answer,
+            reputation: 0
         };
         this.handleUpVote = this.handleUpVote.bind(this);
         this.handleDownVote = this.handleDownVote.bind(this);
-        this.state = {answer: this.props.answer};
     }
+
+    componentDidMount() {
+        this.fetchReputation();
+    }
+    
+    fetchReputation = async () => {
+        try {
+            console.log(this.state.answer.userEmail)
+            const response = await axios.get('http://localhost:8000/user/getreputation', {
+                params: {
+                  userEmail: this.state.answer.userEmail,
+                },
+              });
+            this.setState({ reputation: response.data });
+        } catch (error) {
+            console.error('Error fetching reputation:', error);
+        }
+    };
 
     hyperlinker(text) {
         let filter = /\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g;
@@ -221,12 +240,14 @@ class Answer extends React.Component {
                 userEmail: this.props.userEmail,
                 answer: this.props.answer,
             });
-            const updatedAnswer = response.data;
-            this.setState({
-                isUpvoted: true,
+            const updatedAnswer = response.data.answer;
+            const updatedReputation = response.data.userReputation;
+            this.setState((prevState) => ({
+                isUpvoted: !prevState.isUpvoted,
                 isDownvoted: false,
                 answer: updatedAnswer,
-            });
+                reputation: updatedReputation,
+              }));
         } catch (error) {
             console.error('Error incrementing views:', error);
         }
@@ -238,12 +259,14 @@ class Answer extends React.Component {
                 userEmail: this.props.userEmail,
                 answer: this.props.answer,
             });
-            const updatedAnswer = response.data;
-            this.setState({
+            const updatedAnswer = response.data.answer;
+            const updatedReputation = response.data.userReputation;
+            this.setState((prevState) => ({
                 isUpvoted: false,
-                isDownvoted: true,
+                isDownvoted: !prevState.isDownvoted,
                 answer: updatedAnswer,
-            });
+                reputation: updatedReputation,
+              }));
         } catch (error) {
             console.error('Error decrementing views:', error);
         }
@@ -260,14 +283,20 @@ class Answer extends React.Component {
                 <div className='answerVote'>
                     <div id='answerDiv'>
                         <div className='answerText' dangerouslySetInnerHTML={{__html: text}}/>
-                        <div className='answerAuthor'>{ansBy}<div id='questionDate'>answered {this.props.answer.date}</div></div>
+                        <div className='answerAuthor'>{ansBy}
+                            <div id='questionDate'>answered {this.props.answer.date}</div>
+                            <p>Reputation: {this.state.reputation.reputation}</p>
+                        </div>
+                        
+                        <></>
                     </div>
-                    <>{vote}</>
+                    <>Votes: {vote} | </>
                     <button onClick={this.handleUpVote} > {isUpvoted ? 'Upvoted' : 'UpVote'} </button>
                     <button onClick={this.handleDownVote} > {isDownvoted ? 'Downvoted' : 'DownVote'} </button>
+                    <> |</>
                 </div >
                     <div className='comments'>
-                    <CommentsList ids = {answer.comments} comments={this.props.comments}/> 
+                    <CommentsList ids = {answer.comments} comments={this.props.comments} userEmail = {this.props.userEmail}/> 
                     <CommentForm id = {answer._id} isItQuestion = {false} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail}/>
                 </div>
             </div>

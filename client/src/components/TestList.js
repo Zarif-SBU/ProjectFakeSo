@@ -48,7 +48,6 @@ function FilteredQst (question, filterText, tags) {
     const questionTitle = question.title.toLowerCase();
     const questionText = question.text.toLowerCase();
  
-    // Check if any words are present in the title or text
     return searchWords.some((word) => {        
         if(word[0] === '[' && word[word.length-1] === ']') {
             word = word.slice(1, word.length-1);
@@ -160,38 +159,62 @@ class QuestionDiv extends React.Component {
         this.state = {
             isUpvoted: false,
             isDownvoted: false,
+            isClickled: false, 
+            question: this.props.question,
+            reputation: 0
         };
         this.handleClick = this.handleClick.bind(this);
         this.handleUpVote = this.handleUpVote.bind(this);
         this.handleDownVote = this.handleDownVote.bind(this);
-        this.incrementViews = this.incrementViews.bind(this)
-        this.state = {isClickled: false, question: this.props.question};
+        this.incrementViews = this.incrementViews.bind(this);
     }
+
+
+    componentDidMount() {
+        this.fetchReputation();
+    }
+    
+    fetchReputation = async () => {
+        try {
+            console.log(this.state.question.userEmail)
+            const response = await axios.get('http://localhost:8000/user/getreputation', {
+                params: {
+                  userEmail: this.state.question.userEmail,
+                },
+              });
+            this.setState({ reputation: response.data });
+        } catch (error) {
+            console.error('Error fetching reputation:', error);
+        }
+    };
 
     incrementViews = async () => {
         try {
-          const res = await axios.post(`http://localhost:8000/questions/${this.props.question}/increment-views`);
-          const updatedQuestion = res.data;
-          this.setState({ question: updatedQuestion });
+            const res = await axios.post(`http://localhost:8000/questions/${this.props.question._id}/increment-views`);
+            const updatedQuestion = res.data;
+            this.setState({ question: updatedQuestion });
+            console.log("breh");
         } catch (err) {
-          console.error('Error incrementing views:', err);
+            console.error('Error incrementing views:', err);
         }
     };
 
     handleUpVote = async () => {
         try {
-          const response = await axios.post(`http://localhost:8000/question/increment-vote`, {
-            userEmail: this.props.userEmail,
-            question: this.props.question,
-          });
-          const updatedQuestion = response.data;
-          this.setState((prevState) => ({
-            isUpvoted: !prevState.isUpvoted,
-            isDownvoted: false,
-            question: updatedQuestion,
+            const response = await axios.post(`http://localhost:8000/question/increment-vote`, {
+                userEmail: this.props.userEmail,
+                question: this.props.question,
+            });
+            const updatedQuestion = response.data.question;
+            const updatedReputation = response.data.userReputation;
+            this.setState((prevState) => ({
+                isUpvoted: !prevState.isUpvoted,
+                isDownvoted: false,
+                question: updatedQuestion,
+                reputation: updatedReputation,
           }));
         } catch (error) {
-          console.error('Error incrementing views:', error);
+            console.error('Error incrementing views:', error);
         }
     }
 
@@ -201,11 +224,13 @@ class QuestionDiv extends React.Component {
             userEmail: this.props.userEmail,
             question: this.props.question,
           });
-          const updatedQuestion = response.data;
+          const updatedQuestion = response.data.question;
+          const updatedReputation = response.data.userReputation;
           this.setState((prevState) => ({
             isUpvoted: false,
             isDownvoted: !prevState.isDownvoted,
             question: updatedQuestion,
+            reputation: updatedReputation,
           }));
         } catch (error) {
           console.error('Error decrementing views:', error);
@@ -234,18 +259,19 @@ class QuestionDiv extends React.Component {
             replies = question.answers.length;
         }
         
+        const row = [];
+        if(question.tags != null) {
+        question.tags.map((tagId) =>{
+            this.props.tags.map((tag) => {
+                if(tagId === tag._id) {
+                    var tagElem = (<> {tag.name} </>);
+                    row.push(<p id = 'questionDivIndTag'>{tagElem} </p>);
+                }
+            });
+        });
+        }
 
-         const row = [];
-         if(question.tags != null) {
-          question.tags.map((tagId) =>{
-              this.props.tags.map((tag) => {
-                  if(tagId === tag._id) {
-                      var tagElem = (<> {tag.name} </>);
-                      row.push(<p id = 'questionDivIndTag'>{tagElem} </p>);
-                  }
-              });
-         });
-         }
+        
         return(
             <div className='questionDivNotClick'>
                 <div className='questionDiv' onClick={this.handleClick} >
@@ -258,8 +284,10 @@ class QuestionDiv extends React.Component {
                     <div id='questionSummary'><h1>{summary}</h1></div>
                     <div id='questionTags'>{row}</div>
                     </div>
-                    <div id='questionName'><p>{name} </p> 
-                    <p id='questionDate'>asked {this.props.question.date} </p>
+                    <div id='questionName'>
+                        <p>{name} </p> 
+                        <p id='questionDate'>asked {this.props.question.date} </p>
+                        <p>reputation: {this.state.reputation.reputation}</p>
                     </div>
                 </div>
                 <button onClick={this.handleUpVote} > {isUpvoted ? 'Upvoted' : 'UpVote'} </button>

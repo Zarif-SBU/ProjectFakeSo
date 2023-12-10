@@ -123,6 +123,23 @@ app.get('/comments', async (req, res) => {
   }
 });
 
+app.get('/user/getreputation', async (req, res) => {
+  try {
+    const userEmail = req.query.userEmail;
+    console.log("afsfas", userEmail);
+    const user = (await users.find({ email: userEmail }).exec())[0];
+    
+    if (user) {
+      res.json({ reputation: user.reputation });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching reputation:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.get('user/:email/getUserName', async (req, res) =>{
   try {
     if(req.params.email === "Guest"){
@@ -150,7 +167,6 @@ app.post("/questions/:questionId/increment-views", async (req, res) => {
       { $inc: { views: 1 } },
       { new: true }
     );
-   
     res.json(question);
   } catch (err) {
     console.error("Error incrementing views", err);
@@ -161,11 +177,12 @@ app.post("/questions/:questionId/increment-views", async (req, res) => {
 app.post("/question/increment-vote", async (req, res) => {
   const questionId = req.body.question._id;
   const email = req.body.userEmail;
-
+  
   let question;
-
+  let user;
+  let userReputation;
   question = await questions.findById(questionId);
-
+  user = await users.findOne({ email: question.userEmail });
   if (question.upVoteEmails.includes(email)) {
     question = await questions.findByIdAndUpdate(
       questionId,
@@ -175,6 +192,12 @@ app.post("/question/increment-vote", async (req, res) => {
       },
       { new: true }
     );
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: -5 } },
+      { new: true, select: 'reputation' }
+    );
+
   } else if (question.downVoteEmails.includes(email)) {
     question = await questions.findByIdAndUpdate(
       questionId,
@@ -185,6 +208,11 @@ app.post("/question/increment-vote", async (req, res) => {
       },
       { new: true }
     );
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: 15 } },
+      { new: true, select: 'reputation' }
+    );
   } else {
     question = await questions.findByIdAndUpdate(
       questionId,
@@ -194,9 +222,13 @@ app.post("/question/increment-vote", async (req, res) => {
       },
       { new: true }
     );
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: 5 } },
+      { new: true, select: 'reputation' }
+    );
   }
-
-  res.json(question);
+  res.json({ question, userReputation });
 });
 
 app.post("/question/decrement-vote", async (req, res) => {
@@ -204,8 +236,13 @@ app.post("/question/decrement-vote", async (req, res) => {
   const email = req.body.userEmail;
 
   let question;
+  let user;
+  let userReputation;
 
   question = await questions.findById(questionId);
+
+  question = await questions.findById(questionId);
+  user = await users.findOne({ email: question.userEmail });
 
   if (question.downVoteEmails.includes(email)) {
     question = await questions.findByIdAndUpdate(
@@ -215,6 +252,12 @@ app.post("/question/decrement-vote", async (req, res) => {
         $pull: { downVoteEmails: email },
       },
       { new: true }
+    );
+
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: 10 } },
+      { new: true, select: 'reputation' }
     );
   } else if (question.upVoteEmails.includes(email)) {
     question = await questions.findByIdAndUpdate(
@@ -226,6 +269,12 @@ app.post("/question/decrement-vote", async (req, res) => {
       },
       { new: true }
     );
+
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: -15 } },
+      { new: true, select: 'reputation' }
+    );
   } else {
     question = await questions.findByIdAndUpdate(
       questionId,
@@ -235,9 +284,16 @@ app.post("/question/decrement-vote", async (req, res) => {
       },
       { new: true }
     );
+
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: -10 } },
+      { new: true, select: 'reputation' }
+    );
   }
 
-  res.json(question);
+  res.json({ question, userReputation });
+
 });
 
 app.post("/answer/increment-vote", async (req, res) => {
@@ -245,9 +301,10 @@ app.post("/answer/increment-vote", async (req, res) => {
   const email = req.body.userEmail;
 
   let answer;
-
+  let user;
+  let userReputation;
   answer = await answers.findById(answerId);
-
+  user = await users.findOne({ email: answer.userEmail });
   if (answer.upVoteEmails.includes(email)) {
     answer = await answers.findByIdAndUpdate(
       answerId,
@@ -256,6 +313,11 @@ app.post("/answer/increment-vote", async (req, res) => {
         $pull: { upVoteEmails: email },
       },
       { new: true }
+    );
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: -5 } },
+      { new: true, select: 'reputation' }
     );
   } else if (answer.downVoteEmails.includes(email)) {
     answer = await answers.findByIdAndUpdate(
@@ -267,6 +329,11 @@ app.post("/answer/increment-vote", async (req, res) => {
       },
       { new: true }
     );
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: 15 } },
+      { new: true, select: 'reputation' }
+    );
   } else {
     answer = await answers.findByIdAndUpdate(
       answerId,
@@ -276,9 +343,14 @@ app.post("/answer/increment-vote", async (req, res) => {
       },
       { new: true }
     );
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: 5 } },
+      { new: true, select: 'reputation' }
+    );
   }
 
-  res.json(answer);
+  res.json({ answer, userReputation });
 });
 
 app.post("/answer/decrement-vote", async (req, res) => {
@@ -286,8 +358,10 @@ app.post("/answer/decrement-vote", async (req, res) => {
   const email = req.body.userEmail;
 
   let answer;
-
+  let user;
+  let userReputation;
   answer = await answers.findById(answerId);
+  user = await users.findOne({ email: answer.userEmail });
 
   if (answer.downVoteEmails.includes(email)) {
     answer = await answers.findByIdAndUpdate(
@@ -297,6 +371,11 @@ app.post("/answer/decrement-vote", async (req, res) => {
         $pull: { downVoteEmails: email },
       },
       { new: true }
+    );
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: 10 } },
+      { new: true, select: 'reputation' }
     );
   } else if (answer.upVoteEmails.includes(email)) {
     answer = await answers.findByIdAndUpdate(
@@ -308,6 +387,11 @@ app.post("/answer/decrement-vote", async (req, res) => {
       },
       { new: true }
     );
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: -15 } },
+      { new: true, select: 'reputation' }
+    );
   } else {
     answer = await answers.findByIdAndUpdate(
       answerId,
@@ -317,9 +401,45 @@ app.post("/answer/decrement-vote", async (req, res) => {
       },
       { new: true }
     );
+    userReputation = await users.findByIdAndUpdate(
+      user._id,
+      { $inc: { reputation: -10 } },
+      { new: true, select: 'reputation' }
+    );
   }
 
-  res.json(answer);
+  res.json({ answer, userReputation });
+});
+
+app.post("/comment/increment-vote", async (req, res) => {
+  const commentId = req.body.comment._id;
+  const email = req.body.userEmail;
+
+  let comment;
+
+  comment = await comments.findById(commentId);
+
+  if (comment.upVoteEmails.includes(email)) {
+    comment = await comments.findByIdAndUpdate(
+      commentId,
+      {
+        $inc: { votes: -1 },
+        $pull: { upVoteEmails: email },
+      },
+      { new: true }
+    );
+  } else {
+    comment = await comments.findByIdAndUpdate(
+      commentId,
+      {
+        $inc: { votes: 1 },
+        $addToSet: { upVoteEmails: email },
+      },
+      { new: true }
+    );
+  }
+
+  res.json(comment);
 });
 
 app.post("/questions/:questionId", async (req, res) => {
