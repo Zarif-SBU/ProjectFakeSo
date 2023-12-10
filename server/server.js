@@ -117,12 +117,13 @@ app.get('/tags', async (req, res) => {
 app.get('/comments', async (req, res) => {
   try {
     res.json(await comments.find());
-    res.json(test);
   } catch (error) {
     console.error('Error fetching comments:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
 
 app.use("/createQuestion", addMsgToRequest);
 app.use('/createQuestion', addMsgToResponse);
@@ -149,7 +150,18 @@ app.post("/questions/:questionId", async (req, res) => {
     const question = await questions.findByIdAndUpdate(questionId);
     res.json(question);
   } catch (err) {
-    console.error("Error incrementing views", err);
+    console.error("Error fetching questions", err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+app.post("/answers/:answerId", async (req, res) => {
+  try {
+    const answerId = req.params.answerId;
+    const answer = await questions.findByIdAndUpdate(answerId);
+    res.json(answer);
+  } catch (err) {
+    console.error("Error fetching answer", err);
     res.status(500).json({ message: 'Server Error' });
   }
 });
@@ -335,7 +347,7 @@ app.post("/logout", async (req, res) => {
 });
 
 
-app.post('/comments/create', async (req, res) => {
+app.post('/createComment', async (req, res) => {
   try {
     const text = req.body.text;
     let newComment = new comments({
@@ -367,3 +379,4 @@ app.post('/comments/create', async (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+

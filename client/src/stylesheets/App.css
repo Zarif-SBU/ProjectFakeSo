@@ -466,8 +466,6 @@ color: grey;
     padding-left: 20px;
 }
 .commentText{
-    padding:10px;
-    width: 100%;
-    
-    border-bottom: dotted grey;
+    padding: 8px;
+    width: 95%;
 }

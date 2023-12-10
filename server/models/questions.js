@@ -23,6 +23,10 @@ var QuestionSchema = new Schema(
         votes: {type: Number, default: 0},
         summary: {type: String, default: ''},
         comments: [{type: Schema.Types.ObjectId, ref: 'Comment'}],
+        userEmail: {type: String, default: "testcase@test.com"},
+        userName: {type: String, default: ""},
+        uptVoteEmails:[{type: String}],
+        downVoteEmails:[{type: String}],
     },
     {
         toObject: { getters: true },

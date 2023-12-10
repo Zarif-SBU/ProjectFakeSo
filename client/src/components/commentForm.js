@@ -23,6 +23,8 @@ export default class CommentForm extends React.Component{
             const id = this.state.id;
             const isItQuestion = this.state.isItQuestion;
             await this.createComment(text, id, isItQuestion);
+            console.log("activate")
+            this.props.onSubmit();
             this.setState({ text: '' });
         } catch (error) {
             console.error('Error submitting comment:', error);
@@ -31,7 +33,7 @@ export default class CommentForm extends React.Component{
 
     createComment = async (text, id, isItQuestion) => {
         try {
-            const response = await axios.post('http://localhost:8000/comments/create', { text, id, isItQuestion });
+            const response = await axios.post('http://localhost:8000/createComment', { text, id, isItQuestion });
             console.log('Comment created successfully:', response.data);
         } catch (error) {
             console.error('Error creating comment:', error);

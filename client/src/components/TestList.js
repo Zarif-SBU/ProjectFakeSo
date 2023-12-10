@@ -125,10 +125,8 @@ export default class QuestionList extends React.Component {
             currIndex = (this.state.currentPage - 1) * 5;
         }
         let lastIndex = currIndex + 5;
-        let isLastpage = false;
         if(lastIndex > rows.length-1) {
             lastIndex = rows.length;
-            isLastpage = true;
         }
         let totalPages = Math.ceil(rows.length / 5);
         let slicedRows = rows.slice(currIndex, lastIndex);

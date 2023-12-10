@@ -18,6 +18,10 @@ var AnswerSchema= new Schema(
         ans_date_time:{type: Date, required: true, default: new Date()},
         comments: [{type: Schema.Types.ObjectId, ref: 'Comment'}],
         votes:{type: Number, required: true, default: 0},
+        userEmail: {type: String, default: "testcase@test.com"},
+        userName: {type: String, default: ""},
+        uptVoteEmails:[{type: String}],
+        downVoteEmails:[{type: String}],
     },
     {
         toObject: { getters: true },

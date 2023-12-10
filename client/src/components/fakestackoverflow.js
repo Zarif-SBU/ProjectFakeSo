@@ -12,7 +12,7 @@ import Welcome from './welcome.js';
 export default class FakeStackOverflow extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
+    this.state = {userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], comments:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
     //Tag States
     this.handleTagsEr = this.handleTagsEr.bind(this);
     //Question Home States
@@ -44,6 +44,8 @@ export default class FakeStackOverflow extends React.Component {
     await axios.get('http://localhost:8000/tags')
       .then(response => this.setState({ tags: response.data }))
       .catch(error => console.error('Error fetching tags:', error));
+    await axios.get('http://localhost:8000/comments')
+      .then(response => this.setState({ comments: response.data}))
     // await axios.get("http://localhost:8000/auth")
     //   .then(response => this.setState({loginPager: response.data.login, userEmail: response.data.userData }))
     //   .catch(error => console.error("Error fetch session stuff: ", error));
@@ -55,7 +57,6 @@ export default class FakeStackOverflow extends React.Component {
       .catch(error => {
           console.error('Error fetching session:', error);
       });
-    
   }
 
   retrieve = async() =>{
@@ -68,6 +69,8 @@ export default class FakeStackOverflow extends React.Component {
     await axios.get('http://localhost:8000/tags')
       .then(response => this.setState({ tags: response.data }))
       .catch(error => console.error('Error fetching tags:', error));
+    await axios.get('http://localhost:8000/comments')
+      .then(response => this.setState({ comments: response.data}))
     // await axios.get("http://localhost:8000/auth")
     //   .then(response => this.setState({loginPager: response.data.login, userEmail: response.data.userData}))
     //   .catch(error => console.error("Error fetch session stuff: ", error));
@@ -86,7 +89,6 @@ export default class FakeStackOverflow extends React.Component {
       prevState.isQuestionsActive !== this.state.isQuestionsActive ||
       prevState.qstDisplayed !== this.state.qstDisplayed ||
       prevState.loginPager !== this.state.loginPager
-
     ) {
       this.retrieve();
     }

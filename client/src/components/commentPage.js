@@ -4,7 +4,7 @@ import axios from 'axios';
 export default class CommentsList extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {currentPage: 1, comments: [], ids: this.props.ids}        
+        this.state = {currentPage: 1, comments: this.props.comments, ids: this.props.ids}        
         this.handlePrev = this.handlePrev.bind(this);
         this.handleNext = this.handleNext.bind(this);
     }
@@ -17,23 +17,10 @@ export default class CommentsList extends React.Component {
         this.setState((prevState) => ({currentPage: prevState.currentPage + 1}));
     }
 
-    componentDidMount() {
-        this.updateQ();
-      }
-    
-    updateQ = async () => {
-        try {
-          const response = await axios.get(`http://localhost:8000/comments`);
-          this.setState({ comments: response.data });
-        } catch (error) {
-          console.error('Error fetching comments:', error);
-        }
-    };
-
     render() {
         let rows = [];
         this.state.ids.forEach(id => {
-            let comment = this.state.comments.findOne({ _id: id });
+            let comment = this.state.comments.find(comment => comment._id === id);
             if(comment) {
                 rows.push(<CommentDiv 
                             comment = {comment}
@@ -42,14 +29,14 @@ export default class CommentsList extends React.Component {
         });
         
         let currIndex = 0;
-        if(((this.state.currentPage - 1) * 5 )>rows.length - 1) {
+        if(((this.state.currentPage - 1) * 3 )>rows.length - 1) {
             currIndex = 0;
             this.setState({currentPage: 1});
         } 
         else {
-            currIndex = (this.state.currentPage - 1) * 5;
+            currIndex = (this.state.currentPage - 1) * 3;
         }
-        let lastIndex = currIndex + 5;
+        let lastIndex = currIndex + 3;
         let isLastpage = false;
         if(lastIndex > rows.length-1) {
             lastIndex = rows.length;
@@ -90,7 +77,7 @@ class CommentDiv extends React.Component{
         const votes = comment.votes;
 
         return(<div>
-            <h3>{text}</h3>
+            <p>{text}</p>
             <p>written by {user}</p>
             <p>votes {votes}</p>
             <button>upvote</button>

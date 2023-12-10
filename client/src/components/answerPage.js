@@ -1,37 +1,50 @@
 import React from 'react';
 import axios from 'axios';
 import CommentForm from './commentForm';
-
+import CommentsList from './commentPage';
 
 export default class AnswerPage extends React.Component{
     
     constructor(props) {
         super(props);
-        this.state = {answers: [], question: this.props.question};
+        this.state = {answers: [], question: this.props.question, comments:[], keyForRemount: 0};
+        this.handleNewComment = this.handleNewComment.bind(this);
     }
 
     componentDidMount() {
         this.updateQ();
-      }
+    }
     
-      updateQ = async () => {
+    handleNewComment() {
+        this.updateQ();
+    }
+
+    updateQ = async () => {
         try {
-          const response = await axios.get(`http://localhost:8000/questions/${this.props.question._id}`);
-          this.setState({ question: response.data });
+            const response = await axios.get(`http://localhost:8000/questions/${this.props.question._id}`);
+            this.setState({ question: response.data });
+            const res = await axios.get(`http://localhost:8000/comments`);
+            this.setState((prevState) => ({ comments: res.data, keyForRemount: prevState.keyForRemount + 1 }));
         } catch (error) {
-          console.error('Error fetching questions:', error);
+            console.error('Error fetching questions:', error);
         }
-      };
+    };
 
     render() {
         return (
-            <div id="replacement">
-                <QuestionDisplay question = {this.state.question}
-                questionFuncTwo={this.props.questionFunc}/>
+            <div id="replacement" key={this.state.keyForRemount}>
+                <QuestionDisplay 
+                    question = {this.state.question}
+                    questionFuncTwo={this.props.questionFunc}
+                    comments={this.state.comments}
+                    onSubmit = {this.handleNewComment}
+                />
                 <Answers 
-                question = {this.state.question}
-                answers = {this.props.answers}
-                ansBtn ={this.props.ansBtn}
+                    question = {this.state.question}
+                    answers = {this.props.answers}
+                    ansBtn ={this.props.ansBtn}
+                    comments={this.state.comments}
+                    onSubmit = {this.handleNewComment}
                 />
             </div>
         );
@@ -89,7 +102,8 @@ class QuestionDisplay extends React.Component {
                     <div id='questionN'>{name} <div id = 'questionDate'>asked {this.props.question.date}</div></div>
                     </div>
                 </div>
-                <CommentForm id = {question._id} isItQuestion = {true}/>
+                <CommentsList ids = {question.comments} comments={this.props.comments}/> 
+                <CommentForm id = {question._id} isItQuestion = {true} onSubmit = {this.props.onSubmit}/>
             </div>
         );
     }
@@ -120,7 +134,7 @@ class Answers extends React.Component {
             ansIds.findLast(ansId => {
                 this.props.answers.forEach((answer) =>{
                     if(answer._id === ansId) {
-                        rows.push(<Answer answer = {answer}/>)
+                        rows.push(<Answer answer = {answer} comments={this.props.comments} onSubmit = {this.props.onSubmit}/>)
                     }
                 });
             });
@@ -143,15 +157,13 @@ class Answers extends React.Component {
             currIndex = (this.state.currentPage - 1) * 5;
         }
         let lastIndex = currIndex + 5;
-        let isLastpage = false;
         if(lastIndex > rows.length-1) {
             lastIndex = rows.length;
-            isLastpage = true;
         }
         let totalPages = Math.ceil(rows.length / 5);
         rows = rows.slice(currIndex, lastIndex);
         return(
-            <div className="answerPage">
+            <>
                 <div>
                     {rows}
                 </div>
@@ -168,7 +180,7 @@ class Answers extends React.Component {
                     }
                 </div>
                 <button className="answerBtn" onClick={this.props.ansBtn}> Post Answer </button>
-            </div>
+            </>
         );
     }
 }
@@ -194,13 +206,14 @@ class Answer extends React.Component {
         const text = this.hyperlinker(answer.text);
         const ansBy = answer.ans_by;
         const ansDate = answer.ansDate;
-        return(<div>
+        return(<>
             <div className='answerDiv'>
                 <div className='answerText' dangerouslySetInnerHTML={{__html: text}}/>
                 <div className='answerAuthor'>{ansBy}<div id='questionDate'>answered {this.props.answer.date}</div></div>
             </div>
-                <CommentForm id = {answer._id} isItQuestion = {false}/>
-            </div>
+                <CommentsList ids = {answer.comments} comments={this.props.comments}/> 
+                <CommentForm id = {answer._id} isItQuestion = {false} onSubmit = {this.props.onSubmit}/>
+            </>
         );
     }
 }
