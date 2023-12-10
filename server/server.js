@@ -169,38 +169,158 @@ app.post("/question/increment-vote", async (req, res) => {
   if (question.upVoteEmails.includes(email)) {
     question = await questions.findByIdAndUpdate(
       questionId,
-      { $inc: { votes: -1 } },
+      {
+        $inc: { votes: -1 },
+        $pull: { upVoteEmails: email },
+      },
       { new: true }
     );
-
-    const upVoteIndex = question.upVoteEmails.indexOf(email);
-    if (upVoteIndex !== -1) {
-      question.upVoteEmails.splice(upVoteIndex, 1);
-    }
   } else if (question.downVoteEmails.includes(email)) {
     question = await questions.findByIdAndUpdate(
       questionId,
-      { $inc: { votes: 2 } },
+      {
+        $inc: { votes: 2 },
+        $pull: { downVoteEmails: email },
+        $addToSet: { upVoteEmails: email },
+      },
       { new: true }
     );
-
-    const downVoteIndex = question.downVoteEmails.indexOf(email);
-    if (downVoteIndex !== -1) {
-      question.downVoteEmails.splice(downVoteIndex, 1);
-    }
   } else {
     question = await questions.findByIdAndUpdate(
       questionId,
-      { $inc: { votes: 1 } },
+      {
+        $inc: { votes: 1 },
+        $addToSet: { upVoteEmails: email },
+      },
       { new: true }
     );
-
-    question.upVoteEmails.push(email);
   }
 
   res.json(question);
 });
 
+app.post("/question/decrement-vote", async (req, res) => {
+  const questionId = req.body.question._id;
+  const email = req.body.userEmail;
+
+  let question;
+
+  question = await questions.findById(questionId);
+
+  if (question.downVoteEmails.includes(email)) {
+    question = await questions.findByIdAndUpdate(
+      questionId,
+      {
+        $inc: { votes: 1 },
+        $pull: { downVoteEmails: email },
+      },
+      { new: true }
+    );
+  } else if (question.upVoteEmails.includes(email)) {
+    question = await questions.findByIdAndUpdate(
+      questionId,
+      {
+        $inc: { votes: -2 },
+        $pull: { upVoteEmails: email },
+        $addToSet: { downVoteEmails: email },
+      },
+      { new: true }
+    );
+  } else {
+    question = await questions.findByIdAndUpdate(
+      questionId,
+      {
+        $inc: { votes: -1 },
+        $addToSet: { downVoteEmails: email },
+      },
+      { new: true }
+    );
+  }
+
+  res.json(question);
+});
+
+app.post("/answer/increment-vote", async (req, res) => {
+  const answerId = req.body.answer._id;
+  const email = req.body.userEmail;
+
+  let answer;
+
+  answer = await answers.findById(answerId);
+
+  if (answer.upVoteEmails.includes(email)) {
+    answer = await answers.findByIdAndUpdate(
+      answerId,
+      {
+        $inc: { votes: -1 },
+        $pull: { upVoteEmails: email },
+      },
+      { new: true }
+    );
+  } else if (answer.downVoteEmails.includes(email)) {
+    answer = await answers.findByIdAndUpdate(
+      answerId,
+      {
+        $inc: { votes: 2 },
+        $pull: { downVoteEmails: email },
+        $addToSet: { upVoteEmails: email },
+      },
+      { new: true }
+    );
+  } else {
+    answer = await answers.findByIdAndUpdate(
+      answerId,
+      {
+        $inc: { votes: 1 },
+        $addToSet: { upVoteEmails: email },
+      },
+      { new: true }
+    );
+  }
+
+  res.json(answer);
+});
+
+app.post("/answer/decrement-vote", async (req, res) => {
+  const answerId = req.body.answer._id;
+  const email = req.body.userEmail;
+
+  let answer;
+
+  answer = await answers.findById(answerId);
+
+  if (answer.downVoteEmails.includes(email)) {
+    answer = await answers.findByIdAndUpdate(
+      answerId,
+      {
+        $inc: { votes: 1 },
+        $pull: { downVoteEmails: email },
+      },
+      { new: true }
+    );
+  } else if (answer.upVoteEmails.includes(email)) {
+    answer = await answers.findByIdAndUpdate(
+      answerId,
+      {
+        $inc: { votes: -2 },
+        $pull: { upVoteEmails: email },
+        $addToSet: { downVoteEmails: email },
+      },
+      { new: true }
+    );
+  } else {
+    answer = await answers.findByIdAndUpdate(
+      answerId,
+      {
+        $inc: { votes: -1 },
+        $addToSet: { downVoteEmails: email },
+      },
+      { new: true }
+    );
+  }
+
+  res.json(answer);
+});
 
 app.post("/questions/:questionId", async (req, res) => {
   try {

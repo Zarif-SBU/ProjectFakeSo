@@ -157,7 +157,14 @@ export default class QuestionList extends React.Component {
 class QuestionDiv extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            isUpvoted: false,
+            isDownvoted: false,
+        };
         this.handleClick = this.handleClick.bind(this);
+        this.handleUpVote = this.handleUpVote.bind(this);
+        this.handleDownVote = this.handleDownVote.bind(this);
+        this.incrementViews = this.incrementViews.bind(this)
         this.state = {isClickled: false, question: this.props.question};
     }
 
@@ -171,13 +178,37 @@ class QuestionDiv extends React.Component {
         }
     };
 
-    handleUpVote = async () =>  {
-        try{
-            const response = await axios.post(`http://localhost:8000/question/increment-vote`, {userEmail: this.props.userEmail, question: this.props.question});
-            const updatedQuestion = response.data;
-            this.setState({ question: updatedQuestion });
-        }catch(error) {
-            console.error('Error incrementing views:', error);
+    handleUpVote = async () => {
+        try {
+          const response = await axios.post(`http://localhost:8000/question/increment-vote`, {
+            userEmail: this.props.userEmail,
+            question: this.props.question,
+          });
+          const updatedQuestion = response.data;
+          this.setState((prevState) => ({
+            isUpvoted: !prevState.isUpvoted,
+            isDownvoted: false,
+            question: updatedQuestion,
+          }));
+        } catch (error) {
+          console.error('Error incrementing views:', error);
+        }
+    }
+
+    handleDownVote = async () => {
+        try {
+          const response = await axios.post(`http://localhost:8000/question/decrement-vote`, {
+            userEmail: this.props.userEmail,
+            question: this.props.question,
+          });
+          const updatedQuestion = response.data;
+          this.setState((prevState) => ({
+            isUpvoted: false,
+            isDownvoted: !prevState.isDownvoted,
+            question: updatedQuestion,
+          }));
+        } catch (error) {
+          console.error('Error decrementing views:', error);
         }
     }
 
@@ -190,7 +221,8 @@ class QuestionDiv extends React.Component {
         
     }
 
-    render() { 
+    render() {
+        const { isUpvoted, isDownvoted } = this.state;
         const question = this.state.question;
         const title = question.title;
         const name = question.asked_by ;
@@ -230,8 +262,8 @@ class QuestionDiv extends React.Component {
                     <p id='questionDate'>asked {this.props.question.date} </p>
                     </div>
                 </div>
-                <button onClick={this.handleUpVote}> UpVote </button>
-                <button> DownVote </button>
+                <button onClick={this.handleUpVote} > {isUpvoted ? 'Upvoted' : 'UpVote'} </button>
+                <button onClick={this.handleDownVote} > {isDownvoted ? 'Downvoted' : 'DownVote'} </button>
             </div>
         );
     }

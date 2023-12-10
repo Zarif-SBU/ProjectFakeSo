@@ -329,13 +329,25 @@ table, th, td {
     color: rgb(87, 87, 87);
 }
 /*ANSWER STUFF */
-.answerDiv {
+#answerDiv {
     display: flex;
-    padding-left: 20px;
     padding-top: 30px;
-    padding-bottom: 30px;
+    padding-bottom: 20px;
+}
+.comments{
+    
+}
+#commentDiv {
+    display: flex;
+    padding: 30px;
+    padding-top: 30px;
+    padding-bottom: 20px;
+}
+.answerVote{
+    padding-left: 20px;
+    padding-bottom: 20px;
     border-bottom: dashed grey;
-    background-color: #ecdbc9;
+    background-color: #ffd9ae;
 }
 .answerText{
     width: 85%;

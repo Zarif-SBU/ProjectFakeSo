@@ -189,6 +189,17 @@ class Answers extends React.Component {
 }
 
 class Answer extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isUpvoted: false,
+            isDownvoted: false,
+        };
+        this.handleUpVote = this.handleUpVote.bind(this);
+        this.handleDownVote = this.handleDownVote.bind(this);
+        this.state = {answer: this.props.answer};
+    }
+
     hyperlinker(text) {
         let filter = /\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g;
         let returnText = text;
@@ -202,20 +213,63 @@ class Answer extends React.Component {
           }
         }
         return returnText;
+    }
+
+    handleUpVote = async () => {
+        try {
+            const response = await axios.post(`http://localhost:8000/answer/increment-vote`, {
+                userEmail: this.props.userEmail,
+                answer: this.props.answer,
+            });
+            const updatedAnswer = response.data;
+            this.setState({
+                isUpvoted: true,
+                isDownvoted: false,
+                answer: updatedAnswer,
+            });
+        } catch (error) {
+            console.error('Error incrementing views:', error);
         }
+    }
+    
+    handleDownVote = async () => {
+        try {
+            const response = await axios.post(`http://localhost:8000/answer/decrement-vote`, {
+                userEmail: this.props.userEmail,
+                answer: this.props.answer,
+            });
+            const updatedAnswer = response.data;
+            this.setState({
+                isUpvoted: false,
+                isDownvoted: true,
+                answer: updatedAnswer,
+            });
+        } catch (error) {
+            console.error('Error decrementing views:', error);
+        }
+    }
 
     render() {
-        const answer = this.props.answer;
+        const { isUpvoted, isDownvoted } = this.state;
+        const answer = this.state.answer;
         const text = this.hyperlinker(answer.text);
         const ansBy = answer.ans_by;
-        const ansDate = answer.ansDate;
-        return(<div className='answerAndCommentDiv'>
-            <div className='answerDiv'>
-                <div className='answerText' dangerouslySetInnerHTML={{__html: text}}/>
-                <div className='answerAuthor'>{ansBy}<div id='questionDate'>answered {this.props.answer.date}</div></div>
-            </div>
-                <CommentsList ids = {answer.comments} comments={this.props.comments}/> 
-                <CommentForm id = {answer._id} isItQuestion = {false} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail}/>
+        const vote = answer.votes;
+        return(
+            <div className='answerAndCommentDiv'>
+                <div className='answerVote'>
+                    <div id='answerDiv'>
+                        <div className='answerText' dangerouslySetInnerHTML={{__html: text}}/>
+                        <div className='answerAuthor'>{ansBy}<div id='questionDate'>answered {this.props.answer.date}</div></div>
+                    </div>
+                    <>{vote}</>
+                    <button onClick={this.handleUpVote} > {isUpvoted ? 'Upvoted' : 'UpVote'} </button>
+                    <button onClick={this.handleDownVote} > {isDownvoted ? 'Downvoted' : 'DownVote'} </button>
+                </div >
+                    <div className='comments'>
+                    <CommentsList ids = {answer.comments} comments={this.props.comments}/> 
+                    <CommentForm id = {answer._id} isItQuestion = {false} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail}/>
+                </div>
             </div>
         );
     }

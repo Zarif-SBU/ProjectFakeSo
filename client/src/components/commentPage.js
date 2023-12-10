@@ -68,11 +68,26 @@ class CommentDiv extends React.Component {
         const votes = comment.votes;
 
         return (
-            <div>
-                <p>{text}</p>
-                <p>written by {user}</p>
-                <p>votes {votes}</p>
-                <button>upvote</button>
+            <div style={{ 
+                padding: '15px',
+                border: '2px dotted black', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                borderRadius: '10px',
+                marginBottom: '10px',
+                backgroundColor: '#f5f5f5' // Light gray background color
+            }}>
+                <div id='commentDiv' style={{ flex: 1 }}>
+                    <p id='commentText' style={{ margin: 0 }}>{text}</p>
+                </div>
+                <div style={{ paddingLeft: '20px', paddingRight: '20px', color: 'orange' }}>
+                    <p id='comemntUser' style={{ margin: 0 }}>written by {user}</p>
+                </div>
+                <div style={{ paddingLeft: '20px' }}>
+                    <p id='comemntVote' style={{ margin: 0, marginBottom: '5px' }}>votes {votes}</p>
+                    <button style={{ padding: '5px 10px', borderRadius: '5px', backgroundColor: '#3498db', color: '#fff', border: 'none', cursor: 'pointer' }}>Upvote</button>
+                </div>
             </div>
         );
     }
