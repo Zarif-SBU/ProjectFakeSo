@@ -69,7 +69,9 @@ export default class CommentForm extends React.Component {
                     onChange={this.handleChange}
                     value={this.state.text}
                 />
-                <button onClick={this.handleSubmit} disabled = {this.state.userEmail == 'Guest'}>Submit</button>
+                <button onClick={this.handleSubmit} disabled={this.state.userEmail === 'Guest'}>
+                    {this.state.userEmail === 'Guest' ? 'Guests cannot comment' : 'Submit'}
+                </button>
                 {this.state.error && <p style={{color: 'red'}} className="error-message">{this.state.error}</p>}
             </div>
         );

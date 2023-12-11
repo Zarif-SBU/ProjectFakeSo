@@ -160,10 +160,10 @@ class QuestionDisplay extends React.Component {
                     </div>
                 </div>
                 <button onClick={this.handleUpVote} disabled={question.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
-                    {isUpvoted ? 'Upvoted' : 'UpVote'}
+                {this.props.userEmail === 'Guest' ? 'Guests cannot Up Vote' : 'Up Vote'}
                 </button>
                 <button onClick={this.handleDownVote} disabled={question.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
-                    {isDownvoted ? 'Downvoted' : 'DownVote'}
+                {this.props.userEmail === 'Guest' ? 'Guests cannot Down Vote' : 'Down Vote'}
                 </button>
                 <CommentsList ids = {question.comments} comments={this.props.comments} userEmail = {this.props.userEmail}/> 
                 <CommentForm id = {question._id} isItQuestion = {true} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail} commentCTwo={this.props.commentC}/>
@@ -342,10 +342,10 @@ class Answer extends React.Component {
                     </div>
                     <>Votes: {vote} | </>
                     <button onClick={this.handleUpVote} disabled={answer.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
-                        {isUpvoted ? 'Upvoted' : 'UpVote'}
+                        {this.props.userEmail === 'Guest' ? 'Guests cannot Up Vote' : 'Up Vote'}
                     </button>
                     <button onClick={this.handleDownVote} disabled={answer.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
-                        {isDownvoted ? 'Downvoted' : 'DownVote'}
+                        {this.props.userEmail === 'Guest' ? 'Guests cannot Down Vote' : 'Down Vote'}
                     </button>
                     <> |</>
                 </div >

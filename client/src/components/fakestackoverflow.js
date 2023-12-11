@@ -15,7 +15,7 @@ import CommentsPage from './commentPage.js';
 export default class FakeStackOverflow extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {newTag: false, newQuestion: false,userReputation: 1, userDate: "", userN: "Annoymous", userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], comments:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
+    this.state = {userTags:{}, userAnswers:{},userQuestions:{},newTag: false, newQuestion: false,userReputation: 1, userDate: "", userN: "Annoymous", userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], comments:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
     //Tag States
     this.handleTagsEr = this.handleTagsEr.bind(this);
     //Question Home States
@@ -36,8 +36,10 @@ export default class FakeStackOverflow extends React.Component {
     this.handleNewLogin=this.handleNewLogin.bind(this);
     //for profile page
     this.handleProfilePage=this.handleProfilePage.bind(this);
-    //for updating comments (TESTING)
+    //for updating comments 
     this.handleCommentChange=this.handleCommentChange.bind(this);
+    //handles going to question form to edit user's own questions
+    this.handleUserQuestion=this.handleUserQuestion.bind(this);
 
   }
 
@@ -62,6 +64,7 @@ export default class FakeStackOverflow extends React.Component {
       .catch(error => {
           console.error('Error fetching session:', error);
       });
+    
   }
 
   retrieve = async() =>{
@@ -84,7 +87,6 @@ export default class FakeStackOverflow extends React.Component {
       .catch(error => {
           console.error('Error fetching session:', error);
       });
-
     // console.log("luigi");
   }
   componentDidUpdate(prevProps, prevState) {
@@ -100,12 +102,14 @@ export default class FakeStackOverflow extends React.Component {
       prevState.isQuestionsActive !== this.state.isQuestionsActive ||
       prevState.qstDisplayed !== this.state.qstDisplayed ||
       prevState.profilePage !== this.state.profilePage ||
-      prevState.loginPager !== this.state.loginPager 
+      prevState.loginPager !== this.state.loginPager ||
+      prevState.newQuestion !== this.state.newQuestion ||
+      prevState.newTag !== this.state.newTag
     ) {
       this.retrieve();
     }
   }
-  //a test
+  
   handleCommentChange =async()=>{
     try{
       console.log("retrieving");
@@ -181,8 +185,17 @@ export default class FakeStackOverflow extends React.Component {
   handleProfilePage=async()=>{
     await this.retrieve();
     let newRep = await axios.get(`http://localhost:8000/user/getreputation/${this.state.userEmail}`);
+    let newQ= await axios.get(`http://localhost:8000/users/getQuestions/${this.state.userEmail}`);
+    console.log("Stuff2: ", newQ.data);
     console.log("Stuff: ", newRep.data);
-    this.setState({ profilePage: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false, showAns: false, userReputation: newRep.data});
+    this.setState({ userQuestions: newQ.data, profilePage: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false, showAns: false, userReputation: newRep.data});
+
+  }
+
+  handleUserQuestion=async(question)=>{
+    await this.retrieve();
+    //then we store the question id that will be used to edit the question 
+    this.setState({ newQuestion: true, newTag: false, showForm: false, profilePage:false, showQuestions: false, tagForm: false, isTagsActive: true, isQuestionsActive: false, isClickled: false, showAns: false });
 
   }
 
@@ -190,6 +203,8 @@ export default class FakeStackOverflow extends React.Component {
     //displays the login page first
     // console.log("Hello: ", this.state.loginPager);
     // console.log("Mello: ", this.state.userEmail);
+
+    console.log("USER QUESTIONS:", this.state.userQuestions );
     //if the profilePage is true, then we go to the users profile page
     if(this.state.profilePage){
       return(
@@ -208,6 +223,7 @@ export default class FakeStackOverflow extends React.Component {
           />
           <ProfilePage
             userEmail={this.state.userEmail}
+            newQuestion={this.props.handleUserQuestion}
             userN={this.state.userN}
             userD={this.state.userDate}
             userR={this.state.userReputation}

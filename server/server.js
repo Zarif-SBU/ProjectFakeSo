@@ -720,4 +720,29 @@ app.post("/logout", async (req, res) => {
 
 });
 
+app.get("/users/getQuestions/:userEmail", async (req, res)=>{
+  try {
+    let email=req.params.userEmail;
+    let test=await questions.find({userEmail: email});
+    console.log("TESTING USER QUESTIONS: ", test)
+    res.json(test);
+  } catch (error) {
+    console.error('Error fetching questions:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
+app.get("/users/getTags/:userEmail", async (req, res) =>{
+
+});
+
+app.get("/users/getAnswers/:userEmail", async (req, res)=>{
+  try {
+    let userEmail = req.params.userEmail;
+    res.json(await answers.find({userEmail: userEmail}));
+  }
+  catch(error) {
+    console.error('Error fetching answers: ', error);
+    res.status(500).json({error: 'Internal Server Error'});
+  }
+});
