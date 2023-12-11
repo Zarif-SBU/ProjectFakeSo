@@ -39,6 +39,7 @@ export default class AnswerPage extends React.Component{
                     questionFuncTwo={this.props.questionFunc}
                     comments={this.state.comments}
                     onSubmit = {this.handleNewComment}
+                    commentC={this.props.commentC}
                 />
                 <Answers 
                     question = {this.state.question}
@@ -47,6 +48,7 @@ export default class AnswerPage extends React.Component{
                     comments={this.state.comments}
                     onSubmit = {this.handleNewComment}
                     userEmail = {this.props.userEmail}
+                    commentC={this.props.commentC}
                 />
             </div>
         );
@@ -54,7 +56,20 @@ export default class AnswerPage extends React.Component{
 }
 
 
+
 class QuestionDisplay extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isUpvoted: false,
+            isDownvoted: false,
+            question: this.props.question,
+            reputation: 0
+        };
+        this.handleUpVote = this.handleUpVote.bind(this);
+        this.handleDownVote = this.handleDownVote.bind(this);
+    }
+    
     hyperlinker(text) {
         let filter = /\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g;
         let returnText = text;
@@ -70,13 +85,52 @@ class QuestionDisplay extends React.Component {
         return returnText;
         }
 
+    handleUpVote = async () => {
+        try {
+            const response = await axios.post(`http://localhost:8000/question/increment-vote`, {
+                userEmail: this.props.userEmail,
+                question: this.props.question,
+            });
+            const updatedQuestion = response.data.question;
+            const updatedReputation = response.data.userReputation;
+            this.setState((prevState) => ({
+                isUpvoted: !prevState.isUpvoted,
+                isDownvoted: false,
+                question: updatedQuestion,
+                reputation: updatedReputation,
+          }));
+        } catch (error) {
+            console.error('Error incrementing views:', error);
+        }
+    }
+
+    handleDownVote = async () => {
+        try {
+          const response = await axios.post(`http://localhost:8000/question/decrement-vote`, {
+            userEmail: this.props.userEmail,
+            question: this.props.question,
+          });
+          const updatedQuestion = response.data.question;
+          const updatedReputation = response.data.userReputation;
+          this.setState((prevState) => ({
+            isUpvoted: false,
+            isDownvoted: !prevState.isDownvoted,
+            question: updatedQuestion,
+            reputation: updatedReputation,
+          }));
+        } catch (error) {
+          console.error('Error decrementing views:', error);
+        }
+    }
 
     render() {
-        const question = this.props.question;
+        const { isUpvoted, isDownvoted } = this.state;
+        const question = this.state.question;
         const title = question.title;
         const text = this.hyperlinker(question.text);
         const name = question.asked_by;
         const views = question.views;
+        const votes = question.votes;
         let replies = 0;
         if(question.answers != null) {
             replies = question.answers.length;
@@ -96,6 +150,7 @@ class QuestionDisplay extends React.Component {
                 <div id = 'ansPageQuestionLower'>
                     <div id='questionAnswers'>
                         <p> {replies} replies</p>
+                        <p> {votes} votes</p>
                     </div>
                     <div id='questionTT'>
 
@@ -104,8 +159,14 @@ class QuestionDisplay extends React.Component {
                     <div id='questionN'>{name} <div id = 'questionDate'>asked {this.props.question.date}</div></div>
                     </div>
                 </div>
+                <button onClick={this.handleUpVote} disabled={question.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
+                    {isUpvoted ? 'Upvoted' : 'UpVote'}
+                </button>
+                <button onClick={this.handleDownVote} disabled={question.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
+                    {isDownvoted ? 'Downvoted' : 'DownVote'}
+                </button>
                 <CommentsList ids = {question.comments} comments={this.props.comments} userEmail = {this.props.userEmail}/> 
-                <CommentForm id = {question._id} isItQuestion = {true} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail}/>
+                <CommentForm id = {question._id} isItQuestion = {true} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail} commentCTwo={this.props.commentC}/>
             </div>
         );
     }
@@ -136,7 +197,7 @@ class Answers extends React.Component {
             ansIds.findLast(ansId => {
                 this.props.answers.forEach((answer) =>{
                     if(answer._id === ansId) {
-                        rows.push(<Answer answer = {answer} comments={this.props.comments} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail}/>)
+                        rows.push(<Answer answer = {answer} comments={this.props.comments} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail} commentC={this.props.commentC}/>)
                     }
                 });
             });
@@ -201,24 +262,6 @@ class Answer extends React.Component {
         this.handleDownVote = this.handleDownVote.bind(this);
     }
 
-    componentDidMount() {
-        this.fetchReputation();
-    }
-    
-    fetchReputation = async () => {
-        try {
-            console.log(this.state.answer.userEmail)
-            const response = await axios.get('http://localhost:8000/user/getreputation', {
-                params: {
-                  userEmail: this.state.answer.userEmail,
-                },
-              });
-            this.setState({ reputation: response.data });
-        } catch (error) {
-            console.error('Error fetching reputation:', error);
-        }
-    };
-
     hyperlinker(text) {
         let filter = /\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g;
         let returnText = text;
@@ -235,6 +278,10 @@ class Answer extends React.Component {
     }
 
     handleUpVote = async () => {
+        if(this.props.userEmail == this.state.answer.userEmail) {
+            console.alert("Cant downvote own question");
+            return;
+        }
         try {
             const response = await axios.post(`http://localhost:8000/answer/increment-vote`, {
                 userEmail: this.props.userEmail,
@@ -254,6 +301,10 @@ class Answer extends React.Component {
     }
     
     handleDownVote = async () => {
+        if(this.props.userEmail == this.state.answer.userEmail) {
+            console.alert("Cant downvote own question");
+            return;
+        }
         try {
             const response = await axios.post(`http://localhost:8000/answer/decrement-vote`, {
                 userEmail: this.props.userEmail,
@@ -285,19 +336,22 @@ class Answer extends React.Component {
                         <div className='answerText' dangerouslySetInnerHTML={{__html: text}}/>
                         <div className='answerAuthor'>{ansBy}
                             <div id='questionDate'>answered {this.props.answer.date}</div>
-                            <p>Reputation: {this.state.reputation.reputation}</p>
                         </div>
                         
                         <></>
                     </div>
                     <>Votes: {vote} | </>
-                    <button onClick={this.handleUpVote} > {isUpvoted ? 'Upvoted' : 'UpVote'} </button>
-                    <button onClick={this.handleDownVote} > {isDownvoted ? 'Downvoted' : 'DownVote'} </button>
+                    <button onClick={this.handleUpVote} disabled={answer.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
+                        {isUpvoted ? 'Upvoted' : 'UpVote'}
+                    </button>
+                    <button onClick={this.handleDownVote} disabled={answer.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
+                        {isDownvoted ? 'Downvoted' : 'DownVote'}
+                    </button>
                     <> |</>
                 </div >
                     <div className='comments'>
-                    <CommentsList ids = {answer.comments} comments={this.props.comments} userEmail = {this.props.userEmail}/> 
-                    <CommentForm id = {answer._id} isItQuestion = {false} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail}/>
+                    <CommentsList ids = {answer.comments} comments={this.props.comments} userEmail = {this.props.userEmail} /> 
+                    <CommentForm id = {answer._id} isItQuestion = {false} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail} commentCTwo={this.props.commentC}/>
                 </div>
             </div>
         );

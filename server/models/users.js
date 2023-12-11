@@ -15,7 +15,7 @@ var UserSchema= new Schema(
         userName:{type: String, required:true, minLength:1},
         email:{type: String, required: true, minLength:1},
         passwordHash:{type: String, required: true, minLength:1},
-        reputation:{type: Number, default: 0},
+        reputation:{type: Number, default: 50},
         signDate:{type: Date, required: true, default: new Date()},
         admin:{type: Boolean, default: false}
     },

@@ -109,18 +109,10 @@ class CommentDiv extends React.Component {
           </div>
           <div style={{ paddingLeft: '20px' }}>
             <p id='comemntVote' style={{ margin: 0, marginBottom: '5px' }}>votes {votes}</p>
-            <button
-              style={{
-                padding: '5px 10px',
-                borderRadius: '5px',
-                backgroundColor: '#3498db',
-                color: '#fff',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-              onClick={this.handleUpVote}
-            >
-              Upvote
+
+            <button 
+              onClick={this.handleUpVote}  disabled={comment.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
+                Up Vote
             </button>
           </div>
         </div>

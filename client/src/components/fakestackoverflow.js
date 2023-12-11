@@ -9,11 +9,13 @@ import axios from 'axios';
 import QuestionList from './TestList.js';
 import Welcome from './welcome.js';
 import ProfilePage from './profilePage.js';
+import CommentForm from './commentForm.js';
+import CommentsPage from './commentPage.js';
 
 export default class FakeStackOverflow extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { userDate: "", userN: "Annoymous", userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], comments:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
+    this.state = {newTag: false, newQuestion: false,userReputation: 1, userDate: "", userN: "Annoymous", userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], comments:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
     //Tag States
     this.handleTagsEr = this.handleTagsEr.bind(this);
     //Question Home States
@@ -34,6 +36,8 @@ export default class FakeStackOverflow extends React.Component {
     this.handleNewLogin=this.handleNewLogin.bind(this);
     //for profile page
     this.handleProfilePage=this.handleProfilePage.bind(this);
+    //for updating comments (TESTING)
+    this.handleCommentChange=this.handleCommentChange.bind(this);
 
   }
 
@@ -53,7 +57,7 @@ export default class FakeStackOverflow extends React.Component {
     await axios.get('http://localhost:8000/session', { withCredentials: true })
       .then(response => {
            console.log(response.data.session);
-           this.setState({loginPager: response.data.login, userEmail: response.data.userStuff, userN: response.data.userNN, userDate: response.data.userDD});
+           this.setState({loginPager: response.data.login, userEmail: response.data.userStuff, userN: response.data.userNN, userDate: response.data.userDD, userReputation: response.data.userRR});
         })
       .catch(error => {
           console.error('Error fetching session:', error);
@@ -75,7 +79,7 @@ export default class FakeStackOverflow extends React.Component {
     await axios.get('http://localhost:8000/session', { withCredentials: true })
       .then(response => {
            console.log(response.data.session);
-           this.setState({loginPager: response.data.login, userEmail: response.data.userStuff, userN: response.data.userNN, userDate: response.data.userDD});
+           this.setState({loginPager: response.data.login, userEmail: response.data.userStuff, userN: response.data.userNN, userDate: response.data.userDD, userReputation:response.data.userRR});
         })
       .catch(error => {
           console.error('Error fetching session:', error);
@@ -102,6 +106,19 @@ export default class FakeStackOverflow extends React.Component {
     }
   }
   //a test
+  handleCommentChange =async()=>{
+    try{
+      console.log("retrieving");
+      await this.retrieve();
+    }
+    catch(err){
+      console.log("error Retrieving");
+    }
+    this.handleHome();
+    this.clickQuestion(this.state.qstDisplayed);
+    
+  }
+
 
   handleNewLogin = async(result) =>{
     await this.retrieve();
@@ -163,7 +180,9 @@ export default class FakeStackOverflow extends React.Component {
 
   handleProfilePage=async()=>{
     await this.retrieve();
-    this.setState({ profilePage: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false, showAns: false});
+    let newRep = await axios.get(`http://localhost:8000/user/getreputation/${this.state.userEmail}`);
+    console.log("Stuff: ", newRep.data);
+    this.setState({ profilePage: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false, showAns: false, userReputation: newRep.data});
 
   }
 
@@ -191,6 +210,7 @@ export default class FakeStackOverflow extends React.Component {
             userEmail={this.state.userEmail}
             userN={this.state.userN}
             userD={this.state.userDate}
+            userR={this.state.userReputation}
           />
         </div>
       );
@@ -288,6 +308,7 @@ export default class FakeStackOverflow extends React.Component {
           answers = {this.state.answers}
           questionFunc={this.openQuestionForm}
           ansBtn={this.handleAnswerForm} // Change the prop name to "ansBtn
+          commentC={this.handleCommentChange}
           />
         </div>
       </div>

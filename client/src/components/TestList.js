@@ -169,31 +169,11 @@ class QuestionDiv extends React.Component {
         this.incrementViews = this.incrementViews.bind(this);
     }
 
-
-    componentDidMount() {
-        this.fetchReputation();
-    }
-    
-    fetchReputation = async () => {
-        try {
-            console.log(this.state.question.userEmail)
-            const response = await axios.get('http://localhost:8000/user/getreputation', {
-                params: {
-                  userEmail: this.state.question.userEmail,
-                },
-              });
-            this.setState({ reputation: response.data });
-        } catch (error) {
-            console.error('Error fetching reputation:', error);
-        }
-    };
-
     incrementViews = async () => {
         try {
             const res = await axios.post(`http://localhost:8000/questions/${this.props.question._id}/increment-views`);
             const updatedQuestion = res.data;
             this.setState({ question: updatedQuestion });
-            console.log("breh");
         } catch (err) {
             console.error('Error incrementing views:', err);
         }
@@ -287,11 +267,8 @@ class QuestionDiv extends React.Component {
                     <div id='questionName'>
                         <p>{name} </p> 
                         <p id='questionDate'>asked {this.props.question.date} </p>
-                        <p>reputation: {this.state.reputation.reputation}</p>
                     </div>
                 </div>
-                <button onClick={this.handleUpVote} > {isUpvoted ? 'Upvoted' : 'UpVote'} </button>
-                <button onClick={this.handleDownVote} > {isDownvoted ? 'Downvoted' : 'DownVote'} </button>
             </div>
         );
     }

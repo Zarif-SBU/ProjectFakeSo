@@ -7,6 +7,9 @@ export default class ProfilePage extends React.Component{
         this.state={username: "", email: this.props.userEmail, admin: false};
     }
 
+
+
+
     render(){
         //if user is admin, then they got a whole diff page set up
         if(this.state.admin){
@@ -29,7 +32,7 @@ export default class ProfilePage extends React.Component{
                     <p>{this.state.email}</p>
     
                     <br></br>
-                    <h2>Reputiation: 0</h2>
+                    <h2>Reputation: {this.props.userR}</h2>
                     <br></br>
                     <h2>Member Since</h2>
                     <p>{this.props.userD}</p>

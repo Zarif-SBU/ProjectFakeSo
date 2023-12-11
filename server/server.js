@@ -123,14 +123,12 @@ app.get('/comments', async (req, res) => {
   }
 });
 
-app.get('/user/getreputation', async (req, res) => {
+app.get('/user/getreputation/:userEmail', async (req, res) => {
   try {
-    const userEmail = req.query.userEmail;
-    console.log("afsfas", userEmail);
+    const userEmail = req.params.userEmail;
     const user = (await users.find({ email: userEmail }).exec())[0];
-    
     if (user) {
-      res.json({ reputation: user.reputation });
+      res.json(user.reputation);
     } else {
       res.status(404).json({ error: 'User not found' });
     }
@@ -571,7 +569,6 @@ app.post('/createComment', async (req, res) => {
   try {
     const text = req.body.text;
     const email = req.body.userEmail;
-    console.log("test", req.body.userEmail);
     const user = await users.findOne(
       { email: email},
       { userName: 1, _id: 0 }
@@ -693,7 +690,7 @@ app.get('/session', async (req, res) => {
   //N is user name, D is user date, and R is user reputation
   let userN="";
   let userD="";
-  let userR="";
+  let userR=0;
 
   if(req.session.user){
       loginS=false;
@@ -704,13 +701,14 @@ app.get('/session', async (req, res) => {
       else{
         userN= (await users.find({email: req.session.user}).exec())[0].userName;
         userD= (await users.find({email: req.session.user}).exec())[0].date;
+        userR= (await users.find({email: req.session.user}).exec())[0].reputation;
       }
   }
   else{
       loginS=true;
       name="Guest";
   }
-  res.json({ session: req.session, login: loginS, userStuff: name, userNN: userN, userDD: userD });
+  res.json({ session: req.session, login: loginS, userStuff: name, userNN: userN, userDD: userD, userRR: userR });
 });
 
 
