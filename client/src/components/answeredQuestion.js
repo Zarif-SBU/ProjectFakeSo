@@ -3,10 +3,11 @@ import axios from 'axios';
 import CommentForm from './commentForm';
 import CommentsList from './commentPage';
 
-export default class AnswerPage extends React.Component{
+export default class AnsweredQuestion extends React.Component{
+    
     constructor(props) {
         super(props);
-        this.state = {answers: [], question: this.props.question, comments:[], keyForRemount: 0};
+        this.state = {answers: [], question: this.props.question, comments:[]};
         this.handleNewComment = this.handleNewComment.bind(this);
     }
 
@@ -23,7 +24,6 @@ export default class AnswerPage extends React.Component{
             const response = await axios.get(`http://localhost:8000/questions/${this.props.question._id}`);
             this.setState({ question: response.data });
             const res = await axios.get(`http://localhost:8000/comments`);
-            this.setState((prevState) => ({ comments: res.data, keyForRemount: prevState.keyForRemount + 1 }));
         } catch (error) {
             console.error('Error fetching questions:', error);
         }
@@ -31,18 +31,23 @@ export default class AnswerPage extends React.Component{
 
     render() {
         return (
-            <div id="replacement" key={this.state.keyForRemount}>
-                <QuestionDisplay
+            <div id="replacement">
+                <QuestionDisplay 
+                    questionFuncTwo={this.props.questionFunc}
                     userEmail = {this.props.userEmail}
                     question = {this.state.question}
-                    questionFuncTwo={this.props.questionFunc}
                     comments={this.state.comments}
                     onSubmit = {this.handleNewComment}
                     commentC={this.props.commentC}
                 />
-                <Answers
+                <Answers 
+                    topAnswers = {this.props.topAnswers}
                     question = {this.state.question}
                     answers = {this.props.answers}
+
+                    returnHome={this.props.returnHome}
+                    goReturn={this.props.goReturn}
+
                     ansBtn ={this.props.ansBtn}
                     comments={this.state.comments}
                     onSubmit = {this.handleNewComment}
@@ -174,9 +179,15 @@ class QuestionDisplay extends React.Component {
 class Answers extends React.Component {
     constructor(props){
         super(props);
-        this.state={currentPage: 1};
+        this.state={currentPage: 1, topAnswers: this.props.topAnswers, question: this.props.question, answers: this.props.answers};
         this.handlePrev = this.handlePrev.bind(this);
         this.handleNext = this.handleNext.bind(this);
+    }
+
+    handleUpdate = async() => {
+        await axios.get('http://localhost:8000/answers')
+        .then(response => this.setState({ answers: response.data}))
+        .catch(error => console.error('Error fetching answers:', error));
     }
 
     handlePrev() {
@@ -192,15 +203,26 @@ class Answers extends React.Component {
         
         let rows = [];
         const ansIds = this.props.question.answers;
-        if(ansIds != null) {
-            ansIds.findLast(ansId => {
-                this.props.answers.forEach((answer) =>{
-                    if(answer._id === ansId) {
-                        rows.push(<Answer answer = {answer} comments={this.props.comments} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail} commentC={this.props.commentC}/>)
-                    }
-                });
+
+        this.state.topAnswers.findLast(topId =>{
+            this.state.answers.forEach((answer =>{
+                if(answer._id === topId) {
+                    rows.push(<TopAnswer answer = {answer} comments={this.props.comments} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail} commentC={this.props.commentC}/>)
+                }
+            }))
+        });
+        if (ansIds != null) {
+            ansIds.findLast((ansId) => {
+                if (!this.state.topAnswers.some((topAnswer) => topAnswer === ansId)) {
+                    this.state.answers.forEach((answer) => {
+                        if (answer._id === ansId) {
+                            rows.push(<Answer answer={answer} comments={this.props.comments} onSubmit={this.props.onSubmit} userEmail={this.props.userEmail} commentC={this.props.commentC} />);
+                        }
+                    });
+                }
             });
         }
+
         if(rows.length===0){
             return(
                 <div className="answersEmpty">
@@ -210,7 +232,7 @@ class Answers extends React.Component {
                 </div>
             );
         }
-        
+
         let currIndex = 0;
         if(((this.state.currentPage - 1) * 5 )>rows.length - 1) {
             currIndex = 0;
@@ -255,7 +277,6 @@ class Answer extends React.Component {
             isUpvoted: false,
             isDownvoted: false,
             answer: this.props.answer,
-            reputation: 0
         };
         this.handleUpVote = this.handleUpVote.bind(this);
         this.handleDownVote = this.handleDownVote.bind(this);
@@ -356,3 +377,139 @@ class Answer extends React.Component {
         );
     }
 }
+
+
+class TopAnswer extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isUpvoted: false,
+            isDownvoted: false,
+            answer: this.props.answer,
+        };
+        this.handleUpVote = this.handleUpVote.bind(this);
+        this.handleDownVote = this.handleDownVote.bind(this);
+    }
+
+    hyperlinker(text) {
+        let filter = /\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g;
+        let returnText = text;
+        let matchText = text.match(filter);
+    
+        if (matchText) {
+          for (const match of matchText) {
+            const [fullMatch, linkText, hrefLink] = match.match(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/);
+            const newLink = `<a href="${hrefLink}" target="blank">${linkText}</a>`;
+            returnText = returnText.replace(fullMatch, newLink);
+          }
+        }
+        return returnText;
+    }
+
+    handleDelete = async() => {
+        const answerIdToDelete = this.props.answer._id;
+        try {
+            const response = await axios.post(`http://localhost:8000/deleteAnswer/${answerIdToDelete}`);
+            if (response.data.message) {
+                console.log(response.data.message);
+                
+                // this.props.returnHome();
+                // this.props.goReturn(this.props)
+                
+
+            } else {
+                console.log(response.data.error);
+            }
+        } catch (error) {
+            console.error('Error deleting Answer:', error);
+        }
+    }
+
+    handleUpVote = async () => {
+        if(this.props.userEmail == this.state.answer.userEmail) {
+            console.alert("Cant downvote own question");
+            return;
+        }
+        try {
+            const response = await axios.post(`http://localhost:8000/answer/increment-vote`, {
+                userEmail: this.props.userEmail,
+                answer: this.props.answer,
+            });
+            const updatedAnswer = response.data.answer;
+            const updatedReputation = response.data.userReputation;
+            this.setState((prevState) => ({
+                isUpvoted: !prevState.isUpvoted,
+                isDownvoted: false,
+                answer: updatedAnswer,
+                reputation: updatedReputation,
+              }));
+        } catch (error) {
+            console.error('Error incrementing views:', error);
+        }
+    }
+    
+    handleDownVote = async () => {
+        if(this.props.userEmail == this.state.answer.userEmail) {
+            console.alert("Cant downvote own question");
+            return;
+        }
+        try {
+            const response = await axios.post(`http://localhost:8000/answer/decrement-vote`, {
+                userEmail: this.props.userEmail,
+                answer: this.props.answer,
+            });
+            const updatedAnswer = response.data.answer;
+            const updatedReputation = response.data.userReputation;
+            this.setState((prevState) => ({
+                isUpvoted: false,
+                isDownvoted: !prevState.isDownvoted,
+                answer: updatedAnswer,
+                reputation: updatedReputation,
+              }));
+        } catch (error) {
+            console.error('Error decrementing views:', error);
+        }
+    }
+
+    render() {
+        const { isUpvoted, isDownvoted } = this.state;
+        const answer = this.state.answer;
+        const text = this.hyperlinker(answer.text);
+        const ansBy = answer.ans_by;
+        const vote = answer.votes;
+        return(
+            <div className='answerAndCommentDiv'>
+                <div className='answerVote'>
+                    <div id='answerDiv'>
+                        <div className='answerText' dangerouslySetInnerHTML={{__html: text}}/>
+                        <div className='answerAuthor'>{ansBy}
+                            <div id='questionDate'>answered {this.props.answer.date}</div>
+                        </div>
+                        
+                        <></>
+                    </div>
+                    <>Votes: {vote} | </>
+                    <button onClick={this.handleUpVote} disabled={answer.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
+                        {this.props.userEmail === 'Guest' ? 'Guests cannot Up Vote' : 'Up Vote'}
+                    </button>
+                    <button onClick={this.handleDownVote} disabled={answer.userEmail === this.props.userEmail || this.props.userEmail === "Guest"}>
+                        {this.props.userEmail === 'Guest' ? 'Guests cannot Down Vote' : 'Down Vote'}
+                    </button>
+                    <> |</>
+                    <> | </>
+                    <button onClick={this.handleDelete}> Delete Answer
+                    </button>
+                    <button> Edit Answer
+                    </button>
+                    <> |</>
+                </div >
+                    <div className='comments'>
+                    <CommentsList ids = {answer.comments} comments={this.props.comments} userEmail = {this.props.userEmail} /> 
+                    <CommentForm id = {answer._id} isItQuestion = {false} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail} commentCTwo={this.props.commentC}/>
+                </div>
+            </div>
+        );
+    }
+}
+
+

@@ -9,13 +9,16 @@ import axios from 'axios';
 import QuestionList from './TestList.js';
 import Welcome from './welcome.js';
 import ProfilePage from './profilePage.js';
+import NewQuestion from './newQuestion.js';
+import AnsweredQuestion from './answeredQuestion.js';
+
 import CommentForm from './commentForm.js';
 import CommentsPage from './commentPage.js';
 
 export default class FakeStackOverflow extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {userTags:{}, userAnswers:{},userQuestions:{},newTag: false, newQuestion: false,userReputation: 1, userDate: "", userN: "Annoymous", userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], comments:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
+    this.state = {qstAns: [], ansQstPage: false ,stuffQst: false, qstStore: null, userAnsweredQuestions: {}, userTags:{}, userAnswers:{},userQuestions:{}, newTag: false, userReputation: 1, userDate: "", userN: "Annoymous", userEmail: "Guest",profilePage: false, loginPager: true, questions:[], answers:[], tags:[], comments:[], qstAmount:0, searchRe:"", threeBtn: "Newest", showAns: false, showForm: false, tagForm: false, showQuestions: true, isClickled: false, isTagsActive: false, isQuestionsActive: false, qstDisplayed: null };
     //Tag States
     this.handleTagsEr = this.handleTagsEr.bind(this);
     //Question Home States
@@ -40,6 +43,7 @@ export default class FakeStackOverflow extends React.Component {
     this.handleCommentChange=this.handleCommentChange.bind(this);
     //handles going to question form to edit user's own questions
     this.handleUserQuestion=this.handleUserQuestion.bind(this);
+    this.handleAnsweredQuestionPage=this.handleAnsweredQuestionPage.bind(this);
 
   }
 
@@ -103,8 +107,9 @@ export default class FakeStackOverflow extends React.Component {
       prevState.qstDisplayed !== this.state.qstDisplayed ||
       prevState.profilePage !== this.state.profilePage ||
       prevState.loginPager !== this.state.loginPager ||
-      prevState.newQuestion !== this.state.newQuestion ||
-      prevState.newTag !== this.state.newTag
+      prevState.stuffQst !== this.state.stuffQst ||
+      prevState.newTag !== this.state.newTag ||
+      prevState.ansQstPage !== this.state.ansQstPage
     ) {
       this.retrieve();
     }
@@ -137,7 +142,7 @@ export default class FakeStackOverflow extends React.Component {
 
   handleSearch = async(searchResult) =>{
     await this.retrieve();
-    this.setState({searchRe: searchResult,  showQuestions: true, showForm: false, tagForm: false, isTagsActive: false, isQuestionsActive: true, isClickled: false, showAns: false});
+    this.setState({  ansQstPage: false, stuffQst: false, searchRe: searchResult,  showQuestions: true, showForm: false, tagForm: false, isTagsActive: false, isQuestionsActive: true, isClickled: false, showAns: false});
     console.log(this.searchRe);
   }
 
@@ -158,44 +163,56 @@ export default class FakeStackOverflow extends React.Component {
 
   handleAnswerForm = async() =>{
     await this.retrieve();
-    this.setState({ profilePage:false, showAns: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false});
+    this.setState({ ansQstPage: false, stuffQst: false, profilePage:false, showAns: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false});
   }
 
   clickQuestion = async(clickedQuestion) =>{
     await this.retrieve();
     //now qstDisplayed has to value of clickedQuestion, the object
-    this.setState({isClickled: true, qstDisplayed: clickedQuestion, profilePage:false, showForm: false, showQuestions: false, tagForm: false, showAns: false});
+    this.setState({ ansQstPage: false, stuffQst: false, isClickled: true, qstDisplayed: clickedQuestion, profilePage:false, showForm: false, showQuestions: false, tagForm: false, showAns: false});
   }
 
   openQuestionForm = async() => {
     await this.retrieve();
-    this.setState({ profilePage:false, showForm: true, showQuestions: false, tagForm: false, isClickled: false, showAns: false});
+    this.setState({  ansQstPage: false, stuffQst: false, profilePage:false, showForm: true, showQuestions: false, tagForm: false, isClickled: false, showAns: false});
   }
 
   handleTagsEr = async() => {
     await this.retrieve();
-    this.setState({ showForm: false, profilePage:false, showQuestions: false, tagForm: true, isTagsActive: true, isQuestionsActive: false, isClickled: false, showAns: false });
+    this.setState({  ansQstPage: false, stuffQst: false, showForm: false, profilePage:false, showQuestions: false, tagForm: true, isTagsActive: true, isQuestionsActive: false, isClickled: false, showAns: false });
   }
 
   handleHome = async() => {
     await this.retrieve();
-    this.setState({ searchRe: "",showQuestions: true, profilePage:false, showForm: false, tagForm: false, isTagsActive: false, isQuestionsActive: true, isClickled: false, showAns: false});
+    this.setState({  ansQstPage: false, stuffQst: false, searchRe: "",showQuestions: true, profilePage:false, showForm: false, tagForm: false, isTagsActive: false, isQuestionsActive: true, isClickled: false, showAns: false});
   }
 
   handleProfilePage=async()=>{
     await this.retrieve();
+    //get the reputation, all the questions, answers, and tags associated with the user then send it over the profile page to be displayed
     let newRep = await axios.get(`http://localhost:8000/user/getreputation/${this.state.userEmail}`);
     let newQ= await axios.get(`http://localhost:8000/users/getQuestions/${this.state.userEmail}`);
+    let newA= await axios.get(`http://localhost:8000/users/getAnswers/${this.state.userEmail}`);
+    const userAnswerIds = newA.data.map(answer => answer._id);
+    let newAQ = await axios.get(`http://localhost:8000/users/getAnsweredQuestions/${userAnswerIds}`);
     console.log("Stuff2: ", newQ.data);
+    console.log("Stuff3: ", newA.data);
     console.log("Stuff: ", newRep.data);
-    this.setState({ userQuestions: newQ.data, profilePage: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false, showAns: false, userReputation: newRep.data});
+    this.setState({ ansQstPage: false, stuffQst: false ,userAnsweredQuestions: newAQ.data, userAnswers: newA.data,userQuestions: newQ.data, profilePage: true, showForm: false, showQuestions: false, tagForm: false, isClickled: false, showAns: false, userReputation: newRep.data});
 
   }
 
-  handleUserQuestion=async(question)=>{
+  handleUserQuestion =async(question) =>{
     await this.retrieve();
-    //then we store the question id that will be used to edit the question 
-    this.setState({ newQuestion: true, newTag: false, showForm: false, profilePage:false, showQuestions: false, tagForm: false, isTagsActive: true, isQuestionsActive: false, isClickled: false, showAns: false });
+    console.log("BRUUUUHHHH");
+    //then we store the question id that will be used to edit the question (qstDisplayed now stores the question that will be editted)
+    this.setState({ ansQstPage: false ,qstDisplayed: question, stuffQst: true, showForm: false, profilePage: false, showQuestions: false, tagForm: false, isTagsActive: false, isQuestionsActive: false, isClickled: false, showAns: false });
+  }
+
+  handleAnsweredQuestionPage=async(question, answeredArray)=>{
+    await this.retrieve();
+    //then we store the question itself to qstdisplayed and the answers to that question from that user to qstAns and set ansQstPage
+    this.setState({ ansQstPage: true, qstAns: answeredArray, qstDisplayed: question, stuffQst: true, showForm: false, profilePage: false, showQuestions: false, tagForm: false, isTagsActive: false, isQuestionsActive: false, isClickled: false, showAns: false });
 
   }
 
@@ -204,7 +221,8 @@ export default class FakeStackOverflow extends React.Component {
     // console.log("Hello: ", this.state.loginPager);
     // console.log("Mello: ", this.state.userEmail);
 
-    console.log("USER QUESTIONS:", this.state.userQuestions );
+    // console.log("USER QUESTIONS:", this.state.userQuestions );
+
     //if the profilePage is true, then we go to the users profile page
     if(this.state.profilePage){
       return(
@@ -223,13 +241,87 @@ export default class FakeStackOverflow extends React.Component {
           />
           <ProfilePage
             userEmail={this.state.userEmail}
-            newQuestion={this.props.handleUserQuestion}
+            test={this.handleHome}
+            newQuestion={this.handleUserQuestion}
             userN={this.state.userN}
             userD={this.state.userDate}
             userR={this.state.userReputation}
+            userQList={this.state.userQuestions}
+            userAList={this.state.userAnswers}
+            tags = {this.state.tags}
+            userAQList = {this.state.userAnsweredQuestions}
+
+            goToAns={this.handleAnsweredQuestionPage}
           />
         </div>
       );
+    }
+
+    //Goes to the Answer Page for when u click in the profile
+    if(this.state.ansQstPage){
+      return(
+        <div>
+          <Banner
+          searchFunc={this.handleSearch}
+          userName={this.state.userEmail}
+          userN={this.state.userN}
+          goProfile={this.handleProfilePage}
+          />
+          <NavigationBar
+            homeFunc={this.handleHome}
+            tagsFunc={this.handleTagsEr}
+            isTagsActive={this.state.isTagsActive}  // Pass the state to the NavigationBar
+            isQuestionsActive={this.state.isQuestionsActive}  // Pass the state to the NavigationBar
+          />
+          <AnsweredQuestion 
+
+            ansBtn={this.handleAnswerForm} // Change the prop name to "ansBtn
+
+            returnHome={this.handleHome}
+            goReturn={this.handleAnsweredQuestionPage}
+
+            userEmail = {this.state.userEmail}
+            questionBtn={this.openQuestionForm}
+            answers = {this.state.answers}
+            questionFunc={this.openQuestionForm}
+            commentC={this.handleCommentChange}
+            
+            question={this.state.qstDisplayed}
+            topAnswers={this.state.qstAns}
+          />
+        </div>
+      )
+    }
+
+
+    //TESTING: Supposedlty takes you to the edit form section
+    if(this.state.stuffQst){
+      return(
+        <div>
+        <Banner
+          searchFunc={this.handleSearch}
+          userName={this.state.userEmail}
+          userN={this.state.userN}
+          goProfile={this.handleProfilePage}
+          />
+          <NavigationBar
+            homeFunc={this.handleHome}
+            tagsFunc={this.handleTagsEr}
+            isTagsActive={this.state.isTagsActive}  // Pass the state to the NavigationBar
+            isQuestionsActive={this.state.isQuestionsActive}  // Pass the state to the NavigationBar
+          />
+          
+
+          <NewQuestion 
+            returnFunc={this.handleHome}
+            userEmail={this.state.userEmail}
+            questionIt = {this.state.qstDisplayed} 
+            tag={this.state.tags}
+
+            />
+          </div>
+      );     
+      
     }
 
 

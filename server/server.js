@@ -60,7 +60,7 @@ app.use(
   session({
     secret: "supersecret difficult to guess string",
     cookie: {
-      maxAge: 3600000,
+      maxAge: 24 * 60 * 60 * 1000,
       domain: 'localhost',
       secure: false, // Set to true if using HTTPS
       httpOnly: true,
@@ -732,9 +732,17 @@ app.get("/users/getQuestions/:userEmail", async (req, res)=>{
   }
 });
 
-app.get("/users/getTags/:userEmail", async (req, res) =>{
+// app.get("/users/getTags/:userEmail", async (req, res) =>{
+//   try{
+//     let email=req.params.userEmail;
+//     let test=await questions.find({userEmail: email});
 
-});
+//   }
+//   catch(error){
+//     console.error('Error fetching tags:', error);
+//     res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
 
 app.get("/users/getAnswers/:userEmail", async (req, res)=>{
   try {
@@ -744,5 +752,101 @@ app.get("/users/getAnswers/:userEmail", async (req, res)=>{
   catch(error) {
     console.error('Error fetching answers: ', error);
     res.status(500).json({error: 'Internal Server Error'});
+  }
+});
+
+
+app.get("/users/getAnsweredQuestions/:answerIds", async (req, res) => {
+  try {
+    const answerIds = req.params.answerIds.split(',').map(id => new mongoose.Types.ObjectId(id.trim()));
+    const questionsArray = await questions.find({ answers: { $in: answerIds } });
+    res.json(questionsArray);
+  } catch (error) {
+    console.error('Error fetching questions: ', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post("/editQuestion/:questionID", async (req, res) => {
+  try{
+    //find the question first by locating it through ID
+    const questionID=req.params.questionID;
+    const qstStuff=req.body;
+
+    const question = await questions.findByIdAndUpdate(questionID,
+      {title: qstStuff.title,
+       text: qstStuff.text, 
+       tags: qstStuff.tags,
+       ask_date_time: qstStuff.ask_date_time,
+       summary: qstStuff.summary
+      },
+      {new: true}
+      );
+      console.log('Question updated successfully');
+      res.status(201).json({ message: 'Question updated successfully' });
+  }
+  catch(error){
+    console.error('Error updating question:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post("/editAnswer/:answerID", async (req, res) => {
+  try{
+    //find the question first by locating it through ID
+    const answerID=req.params.answerID;
+    const ansStuff=req.body;
+
+    const answer = await answers.findByIdAndUpdate(answerID,
+      {
+       text: ansStuff.text, 
+       ans_date_time: ansStuff.ans_date_time,
+      },
+      {new: true}
+      );
+      console.log('Answer updated successfully');
+      res.status(201).json({ message: 'Answer updated successfully' });
+  }
+  catch(error){
+    console.error('Error updating answer:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post("/deleteQuestion/:questionId", async (req, res) =>{
+  try {
+    const questionId = req.params.questionId;
+
+    // Use findByIdAndDelete to find and delete the question
+    const deletedQuestion = await questions.findByIdAndDelete(questionId);
+
+    if (deletedQuestion) {
+      res.json({ message: 'Question deleted successfully', deletedQuestion });
+    } else {
+      res.status(404).json({ error: 'Question not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting question:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post("/deleteAnswer/:answerId", async (req, res)=>{
+  try {
+      const answerId = req.params.answerId;
+      // Use findByIdAndDelete to find and delete the answer
+      const deletedAnswer = await answers.findByIdAndDelete(answerId);
+      // remove the answer from the question array
+      
+
+      if (deletedAnswer) {
+        await questions.updateMany({}, { $pull: { answers: answerId } });
+        res.json({ message: 'Answer deleted successfully', deletedAnswer });
+      } else {
+        res.status(404).json({ error: 'Answer not found' });
+      }
+    } catch (error) {
+      console.error('Error deleting Answer:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
   }
 });
