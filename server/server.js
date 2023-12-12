@@ -12,7 +12,7 @@ const bcrypt = require('bcrypt');
 const port = 8000;
 
 const saltRounds = 10;
-
+const sessionSecret = process.argv[2];
 
 app.use(cors({
   origin: 'http://localhost:3000',
@@ -58,7 +58,7 @@ db.on('connected', function() {
 
 app.use(
   session({
-    secret: "supersecret difficult to guess string",
+    secret: "${secret}",
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
       domain: 'localhost',
@@ -872,17 +872,20 @@ app.post("/deleteAnswer/:answerId", async (req, res)=>{
   }
 });
 
-app.post("/deleteTag/:tagName", async (req, res) =>{
+app.post("/deleteTag", async (req, res) =>{
   try{
-    const tagName=req.params.tagName;
-    const tagIt= tags.findOne( {name: tagName} );
+    //we get the tag object
+    const tagObj=req.body;
     //if there are more than one user on the tag, then we don't delete it
-    if(tagIt.userEmails.length()>1){
-      res.json({ message: 'Tag is being used'});
+    if(tagObj.userEmails.length>1){
+      res.status(404).send("Tag is being used")
     }
     else{
-      const deletedTag= await tags.findOneAndDelete({name: tagName});
-      res.json({ message: 'Tag deleted', deletedTag});
+      //first removes that ID from the database entirely from tags
+      const deletedTag= await tags.findByIdAndDelete(tagObj._id);
+      console.log("This is the deleted tag they found: ", deletedTag);
+      
+      res.status(200).send("Tag is good");
     }
   }
   catch(error){

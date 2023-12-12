@@ -324,17 +324,7 @@ class TagsPage extends React.Component {
     render() {
         return (
             <>
-            <div id="tagHeader">
-            <div id="tagCount">{this.props.tags.length} Tags</div>
-            <h1 id="allTagSpec">All Tags</h1>
-            <div className id = "tagBtn">
-            <button id = "q_btn" onClick={this.props.questionFunc}> Ask Question </button>
-            </div>
-
-            </div>
-
-            <div id="tagStuff">
-               
+            <div id="tagStuff">   
                 <TagList tags = {this.props.tags} questions={this.props.questions}/>
             </div>
             </>
@@ -343,21 +333,69 @@ class TagsPage extends React.Component {
 }
 
 class TagList extends React.Component {
+    constructor(props){
+        super(props);
+
+       
+    }
+
+   
+
+
     render() {
     const tagBox = [];
     {console.log("tags: ", this.props.tags)}
         this.props.tags.userTags.forEach(tag => {
             const counter = NumberOfQuestion(tag, this.props.questions);
-            tagBox.push(<div id = "tagDiv" >
-                {tag.name}
-                <p>{counter} questions</p>
-                <button> Edit </button>
-                <button> Delete </button>
-            </div>);
+            tagBox.push(
+                <TagDiv 
+                    tagObj={tag}
+                    counter={counter}
+                />
+
+            );
         });
         return(<>
             {tagBox}
         </>);
+    }
+}
+
+class TagDiv extends React.Component{
+    constructor(props){
+        super(props);
+        
+        this.handleDelete=this.handleDelete.bind(this);
+    }
+
+    async handleDelete(){
+        try{
+            console.log("this is the taggggg: ", this.props.tagObj);
+            const response= await axios.post(`http://localhost:8000/deleteTag`, this.props.tagObj);
+            if(response.status === 404){
+                window.alert("Cannot Delete Tag in Use");
+            }
+            else if (response.status === 200){
+                window.alert("Tag has been removed");
+                window.location.reload();
+                console.log("heyo tag removed");
+            }
+
+        }
+        catch(error){
+            console.error('Error deleting Tag:', error);
+        }
+    }
+
+    render(){
+        return(
+            <div id = "tagDiv" >
+                {this.props.tagObj.name}
+                <p>{this.props.counter} questions</p>
+                <button> Edit </button>
+                <button onClick={this.handleDelete}> Delete </button>
+            </div>
+        );
     }
 }
 

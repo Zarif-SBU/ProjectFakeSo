@@ -18,6 +18,7 @@ export default class NewQuestion extends React.Component{
         try{
             await axios.post(`http://localhost:8000/deleteQuestion/${this.props.questionIt._id}`);
             //can reload if it does not work
+            window.alert("Question has been removed");
             window.location.reload();
             console.log("heyo question removed");
         }
@@ -38,7 +39,7 @@ export default class NewQuestion extends React.Component{
         console.log("bruher: ", newtag);
 
         //if there was something inside newtag
-        if (newtag.length > 0) {
+        if (newtag.length > 0 && newtag[0]!=="") {
             for (let i = 0; i < newtag.length; i++) {
                 const tagTemp = { name: newtag[i].toLowerCase() };
                 var change=false;
