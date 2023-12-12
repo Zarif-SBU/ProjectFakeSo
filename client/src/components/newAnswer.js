@@ -25,8 +25,12 @@ export default class NewAnswer extends React.Component{
           };
        
           try {
-            const answerId = await axios.post(`http://localhost:8000/editAnswer/${answerID}`, answerData);
+            const answerStuff = await axios.post(`http://localhost:8000/editAnswer/${answerId}`, answerData);
+
             window.location.reload();
+            //this.props.returnHome();
+            //this.props.goReturn=();
+
             console.log("Answer Created and Posted Successfully");
             return answerId.data;
              
@@ -52,15 +56,13 @@ export default class NewAnswer extends React.Component{
 
             //then return back to the question itself
             // this.props.returnFunc(this.props.questionIt);
-           
         }
+
         catch(err){
              if(err==="textAnswer_E")
               {
                 this.setState({textAnsError:"Input is empty"});
               }
-
-
         }
     }
 

@@ -565,6 +565,27 @@ app.post("/createTag", async (req, res) => {
   }
 });
 
+
+app.post('/addUserToTag', async (req, res) => {
+  try {
+      const { name, userEmail } = req.body;
+      const tag = await tags.findOne({ name });
+      if (!tag) {
+          return res.status(404).json({ error: 'Tag not found' });
+      }
+      if (!tag.userEmails.includes(userEmail)) {
+          tag.userEmails.push(userEmail);
+          const updatedTag = await tag.save();
+          return res.json({ message: 'User added to tag successfully', updatedTag });
+      } else {
+          return res.status(400).json({ error: 'UserEmail already exists in the tag' });
+      }
+  } catch (error) {
+      console.error('Error adding user to tag:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.post('/createComment', async (req, res) => {
   try {
     const text = req.body.text;
@@ -732,17 +753,17 @@ app.get("/users/getQuestions/:userEmail", async (req, res)=>{
   }
 });
 
-// app.get("/users/getTags/:userEmail", async (req, res) =>{
-//   try{
-//     let email=req.params.userEmail;
-//     let test=await questions.find({userEmail: email});
-
-//   }
-//   catch(error){
-//     console.error('Error fetching tags:', error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// });
+app.get("/users/getTags/:userEmail", async (req, res) =>{
+  try{
+    const email = req.params.userEmail;
+    const userTags = await tags.find({ userEmails: email });
+    res.json({ userTags });
+  }
+  catch(error){
+    console.error('Error fetching tags:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 app.get("/users/getAnswers/:userEmail", async (req, res)=>{
   try {
@@ -849,4 +870,52 @@ app.post("/deleteAnswer/:answerId", async (req, res)=>{
       console.error('Error deleting Answer:', error);
       res.status(500).json({ error: 'Internal Server Error' });
   }
+});
+
+app.post("/deleteTag/:tagName", async (req, res) =>{
+  try{
+    const tagName=req.params.tagName;
+    const tagIt= tags.findOne( {name: tagName} );
+    //if there are more than one user on the tag, then we don't delete it
+    if(tagIt.userEmails.length()>1){
+      res.json({ message: 'Tag is being used'});
+    }
+    else{
+      const deletedTag= await tags.findOneAndDelete({name: tagName});
+      res.json({ message: 'Tag deleted', deletedTag});
+    }
+  }
+  catch(error){
+      console.error('Error deleting Tag:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post("/editTag/:tagName", async (req, res)=>{
+  try {
+    const tagName = req.params.tagName;
+    const tagIt = await tags.findOne({ name: tagName });
+
+    // If there are more than one user on the tag, then we don't delete
+    if (tagIt.userEmails.length > 1) {
+      res.json({ message: 'Tag is being used' });
+    } else {
+      const reTag = await tags.findOneAndUpdate(
+        { name: tagName },
+        {
+          name: req.body.name,
+        },
+        {
+          new: true,
+        }
+      );
+
+      console.log('Tag updated successfully');
+      res.status(201).json({ message: 'Tag updated successfully' });
+    }
+  } catch (error) {
+    console.error('Error editing Tag:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+
 });

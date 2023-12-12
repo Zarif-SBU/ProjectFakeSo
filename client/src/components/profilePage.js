@@ -4,7 +4,7 @@ import axios from 'axios';
 export default class ProfilePage extends React.Component {
     constructor(props) {
         super(props);
-        this.state={username: "", email: this.props.userEmail, admin: false, answerFuncthree: null, userAList: this.props.userAList, answeredQuestions: this.props.userAQList};
+        this.state={username: "", email: this.props.userEmail, admin: false, answerFuncthree: null, userAList: this.props.userAList, answeredQuestions: this.props.userAQList, showAnsweredQuestions: false,};
 
         this.handleGoToNewQuestion=this.handleGoToNewQuestion.bind(this);
     }
@@ -12,8 +12,13 @@ export default class ProfilePage extends React.Component {
     async handleGoToNewQuestion() {
         
     }
-
+    handleButtonClick = () => {
+        this.setState((prevState) => ({
+            showAnsweredQuestions: !prevState.showAnsweredQuestions,
+        }));
+    };
     render(){
+        console.log("-----> ", this.props.userTList);
         //if user is admin, then they got a whole diff page set up
         if(this.state.admin){
             return(
@@ -26,31 +31,46 @@ export default class ProfilePage extends React.Component {
         if(this.state.admin=== false){
             return(
                 <div>
-                    <h2>Username</h2>
+                    <h2>Username: </h2>
                     <p> {this.props.userN}</p>
     
                     <br></br>
     
-                    <h2>Email</h2>
+                    <h2>Email: </h2>
                     <p>{this.state.email}</p>
     
                     <br></br>
                     <h2>Reputation: {this.props.userR}</h2>
                     <br></br>
-                    <h2>Member Since</h2>
+                    <h2>Member Since: </h2>
                     <p>{this.props.userD}</p>
     
                     <br></br>
-                    <h2>Questions Asked</h2>
+                    <h2>Questions Asked: </h2>
                     <div> <QuestionList questions={this.props.userQList}
                                         newQuestionS={this.props.newQuestion}
                                         test={this.props.test}
                     /> </div>
-                    <h2>Tags Posted</h2>
-                    <h2>Answers Posted</h2>
-                    <AnsweredQuestionList
-                    goToAns={this.props.goToAns}
-                    questions = {this.state.answeredQuestions} tags = {this.props.tags} userAList = {this.state.userAList}/>
+                    <h2>Tags Posted: </h2>
+                    <TagsPage tags = {this.props.userTList} questions = {this.props.userQList}/>
+                    {this.state.showAnsweredQuestions && (
+                        <div>
+                            <h2>Answers Posted</h2>
+                            <AnsweredQuestionList
+                                goToAns={this.props.goToAns}
+                                questions={this.state.answeredQuestions}
+                                tags={this.props.tags}
+                                userAList={this.state.userAList}
+                            />
+                        </div>
+                    )}
+                    {this.state.answeredQuestions !== undefined ? (
+                        <button onClick={this.handleButtonClick}>
+                            Show Answered Questions
+                        </button>
+                    ) : (
+                        <p>No questions answered.</p>
+                    )}
                 </div>
             );
         }
@@ -297,4 +317,59 @@ class AnsweredQuestionDiv extends React.Component {
             </div>
         );
     }
+}
+
+
+class TagsPage extends React.Component {
+    render() {
+        return (
+            <>
+            <div id="tagHeader">
+            <div id="tagCount">{this.props.tags.length} Tags</div>
+            <h1 id="allTagSpec">All Tags</h1>
+            <div className id = "tagBtn">
+            <button id = "q_btn" onClick={this.props.questionFunc}> Ask Question </button>
+            </div>
+
+            </div>
+
+            <div id="tagStuff">
+               
+                <TagList tags = {this.props.tags} questions={this.props.questions}/>
+            </div>
+            </>
+        );
+    }
+}
+
+class TagList extends React.Component {
+    render() {
+    const tagBox = [];
+    {console.log("tags: ", this.props.tags)}
+        this.props.tags.userTags.forEach(tag => {
+            const counter = NumberOfQuestion(tag, this.props.questions);
+            tagBox.push(<div id = "tagDiv" >
+                {tag.name}
+                <p>{counter} questions</p>
+                <button> Edit </button>
+                <button> Delete </button>
+            </div>);
+        });
+        return(<>
+            {tagBox}
+        </>);
+    }
+}
+
+
+function NumberOfQuestion(tag, questions) {
+    var counter = 0;
+    questions.forEach(question => {
+        question.tags.forEach(tagId=>{
+            if(tagId === tag._id) {
+                counter++;
+            }
+        });
+    });
+    return counter;
 }

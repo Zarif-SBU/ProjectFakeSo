@@ -45,8 +45,10 @@ export default class AnsweredQuestion extends React.Component{
                     question = {this.state.question}
                     answers = {this.props.answers}
 
+                    
                     returnHome={this.props.returnHome}
                     goReturn={this.props.goReturn}
+                    editFunc={this.props.editFunc}
 
                     ansBtn ={this.props.ansBtn}
                     comments={this.state.comments}
@@ -207,7 +209,13 @@ class Answers extends React.Component {
         this.state.topAnswers.findLast(topId =>{
             this.state.answers.forEach((answer =>{
                 if(answer._id === topId) {
-                    rows.push(<TopAnswer answer = {answer} comments={this.props.comments} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail} commentC={this.props.commentC}/>)
+                    rows.push(<TopAnswer 
+                        returnHome={this.props.returnHome}
+                        goReturn={this.props.goReturn}
+                        topAnswer={this.state.topAnswers}
+                        question={this.state.question}
+                        editFunc={this.props.editFunc}
+                        answer = {answer} comments={this.props.comments} onSubmit = {this.props.onSubmit} userEmail = {this.props.userEmail} commentC={this.props.commentC}/>)
                 }
             }))
         });
@@ -389,6 +397,9 @@ class TopAnswer extends React.Component {
         };
         this.handleUpVote = this.handleUpVote.bind(this);
         this.handleDownVote = this.handleDownVote.bind(this);
+
+        this.handleDelete=this.handleDelete.bind(this);
+        this.handleEdit=this.handleEdit.bind(this);
     }
 
     hyperlinker(text) {
@@ -406,6 +417,10 @@ class TopAnswer extends React.Component {
         return returnText;
     }
 
+    handleEdit = async() =>{
+        this.props.editFunc(this.state.answer);
+    }
+
     handleDelete = async() => {
         const answerIdToDelete = this.props.answer._id;
         try {
@@ -413,8 +428,8 @@ class TopAnswer extends React.Component {
             if (response.data.message) {
                 console.log(response.data.message);
                 
-                // this.props.returnHome();
-                // this.props.goReturn(this.props)
+                this.props.returnHome();
+                this.props.goReturn(this.props.question, this.props.TopAnswer);
                 
 
             } else {
@@ -499,7 +514,7 @@ class TopAnswer extends React.Component {
                     <> | </>
                     <button onClick={this.handleDelete}> Delete Answer
                     </button>
-                    <button> Edit Answer
+                    <button onClick={this.handleEdit}> Edit Answer
                     </button>
                     <> |</>
                 </div >
@@ -510,6 +525,7 @@ class TopAnswer extends React.Component {
             </div>
         );
     }
+        
 }
 
 

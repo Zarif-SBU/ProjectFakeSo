@@ -11,6 +11,7 @@ export default class QuestionForm extends React.Component {
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleAddUser = this.handleAddUser.bind(this);
     }
 
 
@@ -19,19 +20,25 @@ export default class QuestionForm extends React.Component {
         this.setState({ [name]: value });
     }
 
+    handleAddUser = async(name, userEmail) => {
+        await axios.post('http://localhost:8000/addUserToTag', { name, userEmail });
+    }
+
     async postNewUser(newtitle, newtext, newtag, newname, newdate, newSummary) {
         const tagId = [];
         const answerArray = [];
 
         if (newtag.length > 0) {
             for (let i = 0; i < newtag.length; i++) {
-                const tagTemp = { name: newtag[i].toLowerCase() };
+                const tagTemp = { name: newtag[i].toLowerCase(),
+                    userEmails: [newname]
+                };
                 var change=false;
-
                 for (let j = 0; j < this.props.tag.length; j++) {
                     //if the tag already exists in the tags array, push the id of the existing tag onto the array
                     console.log(this.props.tag[j].name);
                     if (tagTemp.name === (this.props.tag[j].name).toLowerCase()) {
+                        this.handleAddUser(tagTemp.name, this.props.userEmail);
                         console.log("WE FOUND THE SAME ONE")
                         tagId.push(this.props.tag[j]._id);
                         change=true;

@@ -35,7 +35,9 @@ export default class NewQuestion extends React.Component{
     async editNewUser(newtitle, newtext, newtag, newname, newdate, newSummary, quesID) {
         const tagId = [];
         const answerArray = [];
+        console.log("bruher: ", newtag);
 
+        //if there was something inside newtag
         if (newtag.length > 0) {
             for (let i = 0; i < newtag.length; i++) {
                 const tagTemp = { name: newtag[i].toLowerCase() };
