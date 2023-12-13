@@ -8,11 +8,34 @@ export default class NewTag extends React.Component{
 
         this.handleChange=this.handleChange.bind(this);
         this.handleSubmit=this.handleSubmit.bind(this);
+        this.editNewTag=this.editNewTag.bind(this);
     }
 
     handleChange(event) {
         const { name, value } = event.target;
         this.setState({ [name]: value });
+    }
+
+    async editNewTag(newname, newemail, tagObj){
+        let tagData={
+            name: newname,
+            UserEmails: [newemail]
+        };
+
+        try{
+            const response= await axios.post(`http://localhost:8000/editTag/${tagObj}`, tagData);
+            if(response.status === 404){
+                window.alert("Cannot Delete Tag in Use");
+            }
+            else if (response.status === 201){
+                window.alert("Tag has been removed");
+                window.location.reload();
+                console.log("heyo tag removed");
+            }
+        }
+        catch(error){
+            console.error('Error editting data:', error);
+        }
     }
 
     async handleSubmit(event){
@@ -21,9 +44,13 @@ export default class NewTag extends React.Component{
             if (tagArray.length > 5) {
                 throw "tagMany";
             }
+            console.log("we are entering the stage of giving the information")
+            console.log("The tag in question: ", this.props.tagIt);
+            this.editNewTag(this.state.ansText, this.props.userEmail, this.props.tagIt._id);
+
         }
         catch(error){
-            if(err==="tagMany")
+            if(error==="tagMany")
               {
                 this.setState({textAnsError:"*There can only be 5 tags*"});
               }

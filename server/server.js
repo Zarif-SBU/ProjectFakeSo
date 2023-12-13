@@ -878,7 +878,7 @@ app.post("/deleteTag", async (req, res) =>{
     const tagObj=req.body;
     //if there are more than one user on the tag, then we don't delete it
     if(tagObj.userEmails.length>1){
-      res.status(404).send("Tag is being used")
+      res.status(404).send("Tag is being used");
     }
     else{
       //first removes that ID from the database entirely from tags
@@ -896,15 +896,17 @@ app.post("/deleteTag", async (req, res) =>{
 
 app.post("/editTag/:tagName", async (req, res)=>{
   try {
-    const tagName = req.params.tagName;
-    const tagIt = await tags.findOne({ name: tagName });
+    //req.params will have the tagObj id from before and req.body will have the new tag
+    const tagId = req.params.tagName;
+    const tagObj= await tags.findById(tagId);
+    // const tagIt = await tags.findOne({ name: tagName });
 
     // If there are more than one user on the tag, then we don't delete
-    if (tagIt.userEmails.length > 1) {
-      res.json({ message: 'Tag is being used' });
+    if (tagObj.userEmails.length > 1) {
+      res.status(404).send("Tag is being used");
     } else {
-      const reTag = await tags.findOneAndUpdate(
-        { name: tagName },
+      const reTag = await tags.findByIdAndUpdate(
+        tagObj._id,
         {
           name: req.body.name,
         },
@@ -912,9 +914,8 @@ app.post("/editTag/:tagName", async (req, res)=>{
           new: true,
         }
       );
-
       console.log('Tag updated successfully');
-      res.status(201).json({ message: 'Tag updated successfully' });
+      res.status(201).send("Tag is Good");
     }
   } catch (error) {
     console.error('Error editing Tag:', error);

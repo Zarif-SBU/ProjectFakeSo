@@ -52,7 +52,7 @@ export default class ProfilePage extends React.Component {
                                         test={this.props.test}
                     /> </div>
                     <h2>Tags Posted: </h2>
-                    <TagsPage tags = {this.props.userTList} questions = {this.props.userQList}/>
+                    <TagsPage tags = {this.props.userTList} questions = {this.props.userQList} goToTag={this.props.goToTag}/>
                     {this.state.showAnsweredQuestions && (
                         <div>
                             <h2>Answers Posted</h2>
@@ -325,7 +325,7 @@ class TagsPage extends React.Component {
         return (
             <>
             <div id="tagStuff">   
-                <TagList tags = {this.props.tags} questions={this.props.questions}/>
+                <TagList tags = {this.props.tags} questions={this.props.questions} goToTag={this.props.goToTag}/>
             </div>
             </>
         );
@@ -351,6 +351,7 @@ class TagList extends React.Component {
                 <TagDiv 
                     tagObj={tag}
                     counter={counter}
+                    goToTag={this.props.goToTag}
                 />
 
             );
@@ -366,6 +367,14 @@ class TagDiv extends React.Component{
         super(props);
         
         this.handleDelete=this.handleDelete.bind(this);
+        this.handleEdit=this.handleEdit.bind(this);
+    }
+
+    async handleEdit(){
+        //give the tag object to fakestackoverflow to then be passed into newTag
+        console.log("we are entering edit");
+        console.log("The other tag in question: ", this.props.tagObj);
+        this.props.goToTag(this.props.tagObj);
     }
 
     async handleDelete(){
@@ -376,7 +385,7 @@ class TagDiv extends React.Component{
                 window.alert("Cannot Delete Tag in Use");
             }
             else if (response.status === 200){
-                window.alert("Tag has been removed");
+                window.alert("Tag has been removed!");
                 window.location.reload();
                 console.log("heyo tag removed");
             }
@@ -392,7 +401,7 @@ class TagDiv extends React.Component{
             <div id = "tagDiv" >
                 {this.props.tagObj.name}
                 <p>{this.props.counter} questions</p>
-                <button> Edit </button>
+                <button onClick={this.handleEdit}> Edit </button>
                 <button onClick={this.handleDelete}> Delete </button>
             </div>
         );
