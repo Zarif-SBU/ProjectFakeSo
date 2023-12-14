@@ -75,10 +75,10 @@ export default class Welcome extends React.Component {
             
         } catch(error) {
             if (error.response && error.response.status === 401) {
-                this.setState({ errorMessage: 'User with this email does not exist' });
+                this.setState({ errorMessage: 'This password and email combination is incorrect' });
             }
             if (error.response && error.response.status === 402) {
-                this.setState({ errorMessage: 'Password is incorrect' });
+                this.setState({ errorMessage: 'This password and email combination is incorrect' });
             }
             console.error('Error logging in: ', error.message);
         }

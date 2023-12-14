@@ -14,15 +14,12 @@ class CommentsList extends React.Component {
 
     handlePrev() {
         this.setState((prevState) => ({
-            currentPage: Math.max(prevState.currentPage - 1, 1)
+          currentPage: prevState.currentPage - 1
         }));
     }
 
     handleNext() {
-        const totalPages = Math.ceil(this.state.ids.length / 3);
-        this.setState((prevState) => ({
-            currentPage: Math.min(prevState.currentPage + 1, totalPages)
-        }));
+      this.setState((prevState) => ({currentPage: prevState.currentPage + 1}));
     }
 
     render() {
@@ -34,15 +31,20 @@ class CommentsList extends React.Component {
                 ) : null;
         }).filter(Boolean).reverse();
 
-        const currIndex = (this.state.currentPage - 1) * 3;
-        let lastIndex = currIndex + 3;
-        let isLastPage = false;
-        if (lastIndex > rows.length - 1) {
-            lastIndex = rows.length;
-            isLastPage = true;
+        let currIndex = 0;
+        if(((this.state.currentPage - 1) * 3 )>rows.length - 1) {
+            currIndex = 0;
+            this.setState({currentPage: 1});
+        } 
+        else {
+            currIndex = (this.state.currentPage - 1) * 3;
         }
-        const totalPages = Math.ceil(rows.length / 3);
-        const slicedRows = rows.slice(currIndex, lastIndex);
+        let lastIndex = currIndex + 3;
+        if(lastIndex > rows.length-1) {
+            lastIndex = rows.length;
+        }
+        let totalPages = Math.ceil(rows.length / 3);
+        let slicedRows = rows.slice(currIndex, lastIndex);
 
         return (
             <div>
@@ -52,7 +54,7 @@ class CommentsList extends React.Component {
                         <button onClick={this.handlePrev}>Previous</button>
                     )}
                     <> {this.state.currentPage} out of {totalPages} pages </>
-                    {!isLastPage && <button onClick={this.handleNext}>Next</button>}
+                    {<button onClick={this.handleNext}>Next</button>}
                 </div>
             </div>
         );

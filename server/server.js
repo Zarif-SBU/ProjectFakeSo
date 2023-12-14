@@ -104,6 +104,16 @@ app.get('/answers', async (req, res) => {
   }
 });
 
+app.get('/users', async (req, res)=>{
+  try{
+    res.json(await users.find());
+  }
+  catch(error){
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.get('/tags', async (req, res) => {
   try {
     
@@ -712,6 +722,8 @@ app.get('/session', async (req, res) => {
   let userN="";
   let userD="";
   let userR=0;
+  let userA=false;
+  let userObj=null;
 
   if(req.session.user){
       loginS=false;
@@ -720,16 +732,20 @@ app.get('/session', async (req, res) => {
         userN="Guest";
       }
       else{
+        userObj= (await users.find({email: req.session.user}));
+        console.log("UHHH: ", userObj);
         userN= (await users.find({email: req.session.user}).exec())[0].userName;
         userD= (await users.find({email: req.session.user}).exec())[0].date;
         userR= (await users.find({email: req.session.user}).exec())[0].reputation;
+        userA = (await users.find({email: req.session.user}).exec())[0].admin;
       }
   }
   else{
       loginS=true;
       name="Guest";
   }
-  res.json({ session: req.session, login: loginS, userStuff: name, userNN: userN, userDD: userD, userRR: userR });
+  res.json({ session: req.session, login: loginS, userStuff: name, userNN: userN, userDD: userD, userRR: userR, userAA: userA, 
+    userOO: userObj });
 });
 
 
@@ -848,6 +864,35 @@ app.post("/deleteQuestion/:questionId", async (req, res) =>{
     }
   } catch (error) {
     console.error('Error deleting question:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post("/deleteUser/:userId", async(req, res) =>{
+  try{
+    
+    const userId=req.params.userId;
+    //then we get the username
+    const user = await users.findById(userId);
+
+    const userEmail= user.email;
+    console.log("this is the user email: ", userEmail);
+
+    //we then delete the user from the database
+    const deletedUser = await users.findByIdAndDelete(userId);
+    //then search through the questions model and delete the question with the associated userName
+    const deletedQuestions = await questions.deleteMany({ userEmail: userEmail });
+    console.log("these are the deleted questions: ", deletedQuestions);
+
+    if(deletedUser){
+      res.json({message: "User deleted successfully", deletedUser, deletedQuestions});
+    }
+    else{
+      res.status(404).json({error: "User not found"});
+    }
+  }
+  catch(error){
+    console.error('Error deleting user:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

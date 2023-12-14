@@ -1,7 +1,8 @@
 // Setup database with initial test data.
 // Include an admin user.
 // Script should take admin credentials as arguments as described in the requirements doc.
-
+//TO RUN THE SCRIPT FOR ADMIN, USE THE SCRIPT BELOW THIS COMMENT WHERE YOU WOULD GIVE THE EMAIL AND PASSWORD TO BE UTILIZED FOR ADMIN PRIVLAGES
+//****** node server/init.js mongodb://127.0.0.1:27017/fake_so <adminEmail> <adminPassword> *******/
 
 
 let userArgs = process.argv.slice(2);
@@ -15,10 +16,19 @@ let Tag = require('./models/tags');
 let Answer = require('./models/answers');
 let Question = require('./models/questions');
 let Comment = require('./models/comments');
-let User = require ('./models/users');
+let User= require('./models/users');
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+
+//the commandline after the mongo database is email and password
+const adminUsername = userArgs[1];
+const adminPassword = userArgs[2];
+
+if (!adminUsername || !adminPassword) {
+  console.log('Please provide both username and password for the admin user.');
+  process.exit(1);
+}
 
 let mongoose = require('mongoose');
 let mongoDB = "mongodb://127.0.0.1:27017/fake_so";
@@ -31,8 +41,8 @@ let tags = [];
 let answers = [];
 let comments =[];
 
-function userCreate(name, emailT, password, reputation, signUp, adminT){
-    const pwHash= bcrypt.hash(password, salt);
+async function userCreate(name, emailT, password, reputation, signUp, adminT){
+    const pwHash= await bcrypt.hash(password, saltRounds);
 
     let user= new User({
         userName: name, 
@@ -43,11 +53,7 @@ function userCreate(name, emailT, password, reputation, signUp, adminT){
         admin: adminT
     });
 
-    return user.save();
-}
-
-function commentCreate(){
-
+    return await user.save();
 }
 
 function tagCreate(name) {
@@ -92,6 +98,9 @@ const populate = async () => {
   let a5 = await answerCreate('I just found all the above examples just too confusing, so I wrote my own. ', 'sana', false);
   await questionCreate('Programmatically navigate using React router', 'the alert shows the proper index for the li clicked, and when I alert the variable within the last function I\'m calling, moveToNextImage(stepClicked), the same value shows but the animation isn\'t happening. This works many other ways, but I\'m trying to pass the index value of the list item clicked to use for the math to calculate.', [t1, t2], [a1, a2], 'Joji John', false, false);
   await questionCreate('android studio save string shared preference, start activity and load the saved string', 'I am using bottom navigation view but am using custom navigation, so my fragments are not recreated every time i switch to a different view. I just hide/show my fragments depending on the icon selected. The problem i am facing is that whenever a config change happens (dark/light theme), my app crashes. I have 2 fragments in this activity and the below code is what i am using to refrain them from being recreated.', [t3, t4, t2], [a3, a4, a5], 'saltyPeter', false, 121);
+  
+  //Allows you to create an admin user
+  await userCreate("Test Admin", adminUsername, adminPassword, 50, new Date(), true);
   await userCreate("The Gamer", "moto@gmail.com", "password", 50, new Date(), true);
   await userCreate("User Guy", "eh@gmail.com", "apple", 50, new Date(), false);
 

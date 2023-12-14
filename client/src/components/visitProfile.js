@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 
-export default class ProfilePage extends React.Component {
+export default class VisitProfile extends React.Component {
     constructor(props) {
         super(props);
         this.state={users: this.props.userSS, username: "", email: this.props.userEmail, admin: this.props.userA, answerFuncthree: null, userAList: this.props.userAList, answeredQuestions: this.props.userAQList, showAnsweredQuestions: false, showTagsPage: false,};
@@ -188,21 +188,21 @@ class UserDiv extends React.Component{
     }
 
     async handleDelete(){
-        const user = this.state.user;
-        const userName = user.userName;
+        // const user = this.state.user;
+        // const userName = user.userName;
     
-        const confirmDelete = window.confirm(`Are you sure you want to delete the user ${userName}?`);
+        // const confirmDelete = window.confirm(`Are you sure you want to delete the user ${userName}?`);
     
-        if (confirmDelete) {
-          try {
-            const response = await axios.post(`http://localhost:8000/deleteUser/${user._id}`);
-            window.alert("User has successfully been deleted");
-            window.location.reload();
+        // if (confirmDelete) {
+        //   try {
+        //     const response = await axios.post(`http://localhost:8000/deleteUser/${user._id}`);
+        //     window.alert("User has successfully been deleted");
+        //     window.location.reload();
 
-          } catch (error) {
-            console.error('Error deleting User:', error);
-          }
-        }
+        //   } catch (error) {
+        //     console.error('Error deleting User:', error);
+        //   }
+        // }
     }
 
     render(){
@@ -276,12 +276,12 @@ class QuestionDiv extends React.Component {
 
     handleClick = async () => {
 
-        // this.props.ansFuncThree(this.state.question);
-        this.setState({isClickled: true})
-        this.props.onQuestionClick(this.state.question);
-        //add back on the state question
-        this.props.newQuestionFunc(this.state.question);
-        console.log("New Question Going");
+        // // this.props.ansFuncThree(this.state.question);
+        // this.setState({isClickled: true})
+        // this.props.onQuestionClick(this.state.question);
+        // //add back on the state question
+        // this.props.newQuestionFunc(this.state.question);
+        // console.log("New Question Going");
         
     }
 
@@ -515,28 +515,28 @@ class TagDiv extends React.Component{
 
     async handleEdit(){
         //give the tag object to fakestackoverflow to then be passed into newTag
-        console.log("we are entering edit");
-        console.log("The other tag in question: ", this.props.tagObj);
-        this.props.goToTag(this.props.tagObj);
+        // console.log("we are entering edit");
+        // console.log("The other tag in question: ", this.props.tagObj);
+        // this.props.goToTag(this.props.tagObj);
     }
 
     async handleDelete(){
-        try{
-            console.log("this is the taggggg: ", this.props.tagObj);
-            const response= await axios.post(`http://localhost:8000/deleteTag`, this.props.tagObj);
-            if(response.status === 404){
-                window.alert("Cannot Delete Tag in Use");
-            }
-            else if (response.status === 200){
-                window.alert("Tag has been removed!");
-                window.location.reload();
-                console.log("heyo tag removed");
-            }
+        // try{
+        //     console.log("this is the taggggg: ", this.props.tagObj);
+        //     const response= await axios.post(`http://localhost:8000/deleteTag`, this.props.tagObj);
+        //     if(response.status === 404){
+        //         window.alert("Cannot Delete Tag in Use");
+        //     }
+        //     else if (response.status === 200){
+        //         window.alert("Tag has been removed!");
+        //         window.location.reload();
+        //         console.log("heyo tag removed");
+        //     }
 
-        }
-        catch(error){
-            console.error('Error deleting Tag:', error);
-        }
+        // }
+        // catch(error){
+        //     console.error('Error deleting Tag:', error);
+        // }
     }
 
     render(){

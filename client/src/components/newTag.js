@@ -28,7 +28,7 @@ export default class NewTag extends React.Component{
                 window.alert("Cannot Delete Tag in Use");
             }
             else if (response.status === 201){
-                window.alert("Tag has been removed");
+                window.alert("Tag has been editted!");
                 window.location.reload();
                 console.log("heyo tag removed");
             }
@@ -44,6 +44,12 @@ export default class NewTag extends React.Component{
             if (tagArray.length > 5) {
                 throw "tagMany";
             }
+            for (let i = 0; i < tagArray.length; i++) {
+                if (tagArray[i].length > 10) {
+                    throw "tagerror";
+                }
+            }
+
             console.log("we are entering the stage of giving the information")
             console.log("The tag in question: ", this.props.tagIt);
             this.editNewTag(this.state.ansText, this.props.userEmail, this.props.tagIt._id);
@@ -54,6 +60,9 @@ export default class NewTag extends React.Component{
               {
                 this.setState({textAnsError:"*There can only be 5 tags*"});
               }
+            if(error==="tagerror"){
+                this.setState({textAnsError:"Tags cannot be of length 10 or higher"});
+            }
         }
     }
 
