@@ -15,5 +15,23 @@ cd server
 npm install
 cd client
 npm install
-exit
-sadasdsadsa
+```
+
+## Dependencies
+Server:
+- Axios
+- Nodemon
+- Express
+- Mongoose
+- Bcrypt
+- Connect-mongo
+- Express-session
+Client:
+- Axios
+- Other Client Dependencies...
+## Functionality
+- Welcome Page: A landing page introducing users to the platform.
+- Questions Page: View and ask programming-related questions.
+- Answers Page: Provide answers to questions from the community.
+- Profile Page: Manage your user profile and settings.
+- Tags Page: Explore questions based on tags and categories.
