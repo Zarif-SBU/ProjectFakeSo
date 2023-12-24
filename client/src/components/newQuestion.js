@@ -36,7 +36,6 @@ export default class NewQuestion extends React.Component{
     async editNewUser(newtitle, newtext, newtag, newname, newdate, newSummary, quesID) {
         const tagId = [];
         const answerArray = [];
-        console.log("bruher: ", newtag);
 
         //if there was something inside newtag
         if (newtag.length > 0 && newtag[0]!=="") {
@@ -46,9 +45,7 @@ export default class NewQuestion extends React.Component{
 
                 for (let j = 0; j < this.props.tag.length; j++) {
                     //if the tag already exists in the tags array, push the id of the existing tag onto the array
-                    console.log(this.props.tag[j].name);
                     if (tagTemp.name === (this.props.tag[j].name).toLowerCase()) {
-                        console.log("WE FOUND THE SAME ONE")
                         tagId.push(this.props.tag[j]._id);
                         change=true;
                     }
@@ -56,7 +53,6 @@ export default class NewQuestion extends React.Component{
                 //if none of them matched, create a new tag and then post it
                 if(change===false){
                     let tagStore = await axios.post("http://localhost:8000/createTag", tagTemp);
-                    console.log("SADLY, WE HAVE TO CREATE ONE"+tagStore.data.tagId);
                     // tagId.push(tagStore.data._id);
                     tagId.push(tagStore.data.tagId);
                 }
@@ -158,7 +154,6 @@ export default class NewQuestion extends React.Component{
 
 
     render(){
-        console.log("Stufferererer: ", this.props.questionIt);
         return (
             <div id="askQst_inner">
                 <h3>Question Title*</h3>

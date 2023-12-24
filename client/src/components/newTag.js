@@ -30,7 +30,6 @@ export default class NewTag extends React.Component{
             else if (response.status === 201){
                 window.alert("Tag has been editted!");
                 window.location.reload();
-                console.log("heyo tag removed");
             }
         }
         catch(error){
@@ -49,9 +48,6 @@ export default class NewTag extends React.Component{
                     throw "tagerror";
                 }
             }
-
-            console.log("we are entering the stage of giving the information")
-            console.log("The tag in question: ", this.props.tagIt);
             this.editNewTag(this.state.ansText, this.props.userEmail, this.props.tagIt._id);
 
         }

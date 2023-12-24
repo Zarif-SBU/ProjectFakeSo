@@ -18,7 +18,6 @@ export default class Banner extends React.Component{
 
   handleRefresh = () => {
     // Force a page refresh
-    console.log("Heyo");
     window.location.reload();
   };
 
@@ -56,7 +55,6 @@ export default class Banner extends React.Component{
     // You can access the search input in this.state.search
     // and perform any actions you need here
     const searchInput = this.state.search;
-    console.log('Search Input:', searchInput);
     this.props.searchFunc(this.state.search);
   }
 

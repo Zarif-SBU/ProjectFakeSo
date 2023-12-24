@@ -405,7 +405,6 @@ class AnsweredQuestionDiv extends React.Component {
         const matchingAnswers = this.state.question.answers.filter(answer =>
             this.state.userAList.some(userAnswer => userAnswer._id === answer)
         );
-        console.log("->>>>>>>>> ", matchingAnswers);
         this.props.goToAns(this.state.question, matchingAnswers);
         // await this.incrementViews();
         // this.setState({isClickled: true});
@@ -487,7 +486,6 @@ class TagList extends React.Component {
 
     render() {
     const tagBox = [];
-    {console.log("tags: ", this.props.tags)}
         this.props.tags.userTags.forEach(tag => {
             const counter = NumberOfQuestion(tag, this.props.questions);
             tagBox.push(

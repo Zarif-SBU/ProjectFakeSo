@@ -70,8 +70,6 @@ export default class FakeStackOverflow extends React.Component {
     await axios.get('http://localhost:8000/users')
       .then(response => this.setState({ users: response.data }))
       .catch(error => console.error('Error fetching tags:', error));
- 
-
     await axios.get('http://localhost:8000/comments')
       .then(response => this.setState({ comments: response.data}))
     await axios.get('http://localhost:8000/session', { withCredentials: true })
@@ -110,7 +108,6 @@ export default class FakeStackOverflow extends React.Component {
       .catch(error => {
           console.error('Error fetching session:', error);
       });
-    // console.log("luigi");
   }
   componentDidUpdate(prevProps, prevState) {
     if (
@@ -227,7 +224,6 @@ export default class FakeStackOverflow extends React.Component {
       newAQ = await axios.get(`http://localhost:8000/users/getAnsweredQuestions/${userAnswerIds}`);
     }
 
-    console.log("user List: ", users.data);
     // await axios.get('http://localhost:8000/session', { withCredentials: true })
     //   .then(response => {
     //        console.log(response.data.session);
@@ -243,7 +239,6 @@ export default class FakeStackOverflow extends React.Component {
 
   handleUserQuestion =async(question) =>{
     await this.retrieve();
-    console.log("BRUUUUHHHH");
     //then we store the question id that will be used to edit the question (qstDisplayed now stores the question that will be editted)
     this.setState({goUser:false, editTag: false,editAns: false ,ansQstPage: false ,qstDisplayed: question, stuffQst: true, showForm: false, profilePage: false, showQuestions: false, tagForm: false, isTagsActive: false, isQuestionsActive: false, isClickled: false, showAns: false });
   }
@@ -268,14 +263,11 @@ export default class FakeStackOverflow extends React.Component {
   handleEditTag=async(tag)=>{
     await this.retrieve();
     //store the tag object that was clicked into tagStore to be used to then edit the tag
-    console.log("REAL TAG: ", tag);
     this.setState({goUser:false, editTag: true, editAns: false ,ansQstPage: false ,tagStore: tag, stuffQst: false, showForm: false, profilePage: false, showQuestions: false, tagForm: false, isTagsActive: false, isQuestionsActive: false, isClickled: false, showAns: false });
   }
 
   handleGoToUser=async(user)=>{
     await this.retrieve();
-    console.log("You entered user page");
-    console.log("REAL USER: ", user);
     let newRep = await axios.get(`http://localhost:8000/user/getreputation/${user.email}`);
     let newQ= await axios.get(`http://localhost:8000/users/getQuestions/${user.email}`);
     let newA= await axios.get(`http://localhost:8000/users/getAnswers/${user.email}`);

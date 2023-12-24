@@ -509,3 +509,8 @@ color: grey;
     height:90vh;
     overflow-y:auto;
 }
+
+#questionSummary{
+    font-size: 10px;
+    color: black;
+}

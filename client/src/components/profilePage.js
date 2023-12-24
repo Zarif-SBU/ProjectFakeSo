@@ -229,7 +229,6 @@ class QuestionList extends React.Component {
     }
 
     handleQuestionClick = async(clickedQuestion) => {
-        console.log("Question clicked:", clickedQuestion);
         this.setState({clickedQuestion: null});
     }
 
@@ -281,7 +280,6 @@ class QuestionDiv extends React.Component {
         this.props.onQuestionClick(this.state.question);
         //add back on the state question
         this.props.newQuestionFunc(this.state.question);
-        console.log("New Question Going");
         
     }
 
@@ -317,7 +315,6 @@ class AnsweredQuestionList extends React.Component {
     }
 
     handleQuestionClick = async(clickedQuestion) => {
-        console.log("Question clicked:", clickedQuestion);
         this.setState({clickedQuestion: null});
     }
 
@@ -405,7 +402,6 @@ class AnsweredQuestionDiv extends React.Component {
         const matchingAnswers = this.state.question.answers.filter(answer =>
             this.state.userAList.some(userAnswer => userAnswer._id === answer)
         );
-        console.log("->>>>>>>>> ", matchingAnswers);
         this.props.goToAns(this.state.question, matchingAnswers);
         // await this.incrementViews();
         // this.setState({isClickled: true});
@@ -487,7 +483,6 @@ class TagList extends React.Component {
 
     render() {
     const tagBox = [];
-    {console.log("tags: ", this.props.tags)}
         this.props.tags.userTags.forEach(tag => {
             const counter = NumberOfQuestion(tag, this.props.questions);
             tagBox.push(
@@ -515,14 +510,11 @@ class TagDiv extends React.Component{
 
     async handleEdit(){
         //give the tag object to fakestackoverflow to then be passed into newTag
-        console.log("we are entering edit");
-        console.log("The other tag in question: ", this.props.tagObj);
         this.props.goToTag(this.props.tagObj);
     }
 
     async handleDelete(){
         try{
-            console.log("this is the taggggg: ", this.props.tagObj);
             const response= await axios.post(`http://localhost:8000/deleteTag`, this.props.tagObj);
             if(response.status === 404){
                 window.alert("Cannot Delete Tag in Use");

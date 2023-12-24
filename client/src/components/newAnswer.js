@@ -48,8 +48,6 @@ export default class NewAnswer extends React.Component{
             //Now, add it to the answer database and then push it to the question schema
             let tempDate = new Date();
             let newAnswerId = await this.editAnswer(this.props.userEmail, this.state.ansText, tempDate, this.props.answerIt._id);
-            console.log(newAnswerId);
-
             //adds it to the question scehma now
             // await this.addAnswer(newAnswerId);
             // this.props.questionIt.answers.push(newAnswerId);

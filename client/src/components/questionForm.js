@@ -36,10 +36,8 @@ export default class QuestionForm extends React.Component {
                 var change=false;
                 for (let j = 0; j < this.props.tag.length; j++) {
                     //if the tag already exists in the tags array, push the id of the existing tag onto the array
-                    console.log(this.props.tag[j].name);
                     if (tagTemp.name === (this.props.tag[j].name).toLowerCase()) {
                         this.handleAddUser(tagTemp.name, this.props.userEmail);
-                        console.log("WE FOUND THE SAME ONE")
                         tagId.push(this.props.tag[j]._id);
                         change=true;
                     }
@@ -47,7 +45,6 @@ export default class QuestionForm extends React.Component {
                 //if none of them matched, create a new tag and then post it
                 if(change===false){
                     let tagStore = await axios.post("http://localhost:8000/createTag", tagTemp);
-                    console.log("SADLY, WE HAVE TO CREATE ONE"+tagStore.data.tagId);
                     // tagId.push(tagStore.data._id);
                     tagId.push(tagStore.data.tagId);
                 }

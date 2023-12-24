@@ -674,7 +674,6 @@ app.post("/login", async (req, res) => {
 
   else{
   const verdict = await bcrypt.compare(epw, user.passwordHash);
-  console.log("THE VERDICT IS: ", verdict);
   try {
     if(verdict) {
       req.session.user = email.trim();
@@ -733,7 +732,6 @@ app.get('/session', async (req, res) => {
       }
       else{
         userObj= (await users.find({email: req.session.user}));
-        console.log("UHHH: ", userObj);
         userN= (await users.find({email: req.session.user}).exec())[0].userName;
         userD= (await users.find({email: req.session.user}).exec())[0].date;
         userR= (await users.find({email: req.session.user}).exec())[0].reputation;
@@ -761,7 +759,6 @@ app.get("/users/getQuestions/:userEmail", async (req, res)=>{
   try {
     let email=req.params.userEmail;
     let test=await questions.find({userEmail: email});
-    console.log("TESTING USER QUESTIONS: ", test)
     res.json(test);
   } catch (error) {
     console.error('Error fetching questions:', error);
