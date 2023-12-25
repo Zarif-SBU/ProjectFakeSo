@@ -8,6 +8,7 @@ Welcome to Fake Stack Overflow, a project dedicated to crafting a comprehensive 
 - [Functionality](#functionality)
 
 ## Installation
+The project uses MongoDB as the NoSQL database to store data related to this application. 
 The repository has a server and client directory. Each directory has the `package.json` and `package-lock.json` files, which list the dependencies of the server and client applications, respectively. To install the necessary dependencies, run the following commands:
 
 ```bash
@@ -15,6 +16,12 @@ cd server
 npm install
 cd client
 npm install
+```
+In addition also run these in the server directory
+```bash
+npm install bcrypt
+npm install connect-mongo
+npm install express-session
 ```
 
 ## Dependencies
@@ -30,8 +37,9 @@ Client:
 - Axios
 - Other Client Dependencies...
 ## Functionality
-- Welcome Page: A landing page introducing users to the platform.
+- Welcome Page: A landing page that asks users to either login, register or sign in as a guest.
 - Questions Page: View and ask programming-related questions.
+- 
 - Answers Page: Provide answers to questions from the community.
 - Profile Page: Manage your user profile and settings.
 - Tags Page: Explore questions based on tags and categories.
