@@ -17,16 +17,9 @@ npm install
 cd client
 npm install
 ```
-In addition also run these in the server directory
-```bash
-npm install bcrypt
-npm install connect-mongo
-npm install express-session
-```
-
 ## Dependencies
 Server:
-- Axios
+- Cors
 - Nodemon
 - Express
 - Mongoose
@@ -35,9 +28,22 @@ Server:
 - Express-session
 Client:
 - Axios
-- Other Client Dependencies...
 
 ## Starting the website
+in the client directory
+```bash
+npm start
+```
+in the client directory
+```bash
+mongod --bind_ip 127.0.0.1     
+```
+in root directory 
+```bash
+mongosh
+nodemon server/server.js
+```
+if you get an error from nodemon then open up command prompt in administrative mode and type the same command in the root directory
 
 ## Functionality
 - Welcome Page: A landing page that asks users to either login, register or sign in as a guest.
