@@ -45,6 +45,8 @@ nodemon server/server.js
 ```
 if you get an error from nodemon then open up command prompt in administrative mode and type the same command in the root directory
 
+## Code
+
 ## Functionality
 - Welcome Page: A landing page that asks users to either login, register or sign in as a guest.
   <img width="1280" alt="image" src="https://github.com/Zarif-SBU/ProjectFakeSo/assets/123431894/c2a09686-28f9-4b58-a4f7-30b846c69b13">
