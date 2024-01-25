@@ -26,10 +26,13 @@ Server:
 - Bcrypt
 - Connect-mongo
 - Express-session
+
 Client:
 - Axios
 
 ## Starting the website
+You will need to install mongodb following this tutorial https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-windows/#std-label-install-mdb-community-windows
+
 in the client directory
 ```bash
 npm start
