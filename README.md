@@ -1,7 +1,7 @@
 # Fake Stack Overflow
 Fake Stack Overflow is a QandA website similar to Stack Overflow. 
 
-##What I learned
+## What I learned
 - frontend and backend webdevelopment in JavaScript.
 - worked in NodeJS framework
 - Used **React**, **Axios** and **Express** libraries to setup backend and frontend communication
